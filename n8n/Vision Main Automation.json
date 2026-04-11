@@ -1,0 +1,298 @@
+{
+  "name": "Vision Main Automation - FINAL FIX",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        192
+      ],
+      "id": "b182c775-0f33-4ac8-8d85-9fffcc0e7625",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tkqRW2XjpfGRoeEd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.sender || $json.from}}",
+        "rules": {
+          "rules": [
+            {
+              "operation": "contains",
+              "value2": "priority@example.com"
+            },
+            {
+              "operation": "contains",
+              "value2": "blacklist@example.com"
+            }
+          ]
+        },
+        "fallbackOutput": 2
+      },
+      "id": "7366af70-3fcc-4d37-8121-e52df619973b",
+      "name": "Intelligent Filter",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/c69bd0d4-a726-4c1c-a9a7-bf7a9337c32a",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "rawPayload",
+              "value": "={{JSON.stringify($json)}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2a8f84f-b037-4d8a-ac55-bb4815067381",
+      "name": "Trigger Urgent Fire",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "schema": "public",
+        "table": "email_actions",
+        "columns": "payload",
+        "options": {}
+      },
+      "id": "2ee08527-d3d0-4b8c-8418-799c86692d64",
+      "name": "Save Blacklist",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        0,
+        192
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "57onlUbW4pSOWEVy",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = [];\n\nfor (const item of $input.all()) {\n  const emailData = item.json;\n  \n  let senderEmail = '';\n  let senderName = '';\n\n  if (emailData.from?.value?.[0]) {\n    senderEmail = emailData.from.value[0].address || '';\n    senderName = emailData.from.value[0].name || senderEmail;\n  } else if (emailData.from?.text) {\n    const emailMatch = emailData.from.text.match(/<([^>]+)>/) || \n                      emailData.from.text.match(/([^\\s]+@[^\\s]+)/);\n    senderEmail = emailMatch ? emailMatch[1] : emailData.from.text;\n    \n    const nameMatch = emailData.from.text.match(/^([^<]+)/);\n    senderName = nameMatch ? nameMatch[1].trim().replace(/\\\"/g, '') : senderEmail;\n  }\n\n  const receivedDate = new Date(emailData.date || emailData.receivedTime);\n  const formattedDate = receivedDate.toLocaleString('en-US', {\n    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true\n  });\n\n  let emailContent = '';\n  if (emailData.text) {\n    emailContent = emailData.text;\n  } else if (emailData.html) {\n    emailContent = emailData.html.replace(/<style[^>]*>.*?<\\/style>/gs, '').replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n  } else if (emailData.body) {\n    emailContent = emailData.body;\n  }\n\n  const rowData = {\n    mailid: $input.first().json.id,\n    date: formattedDate,\n    senderName: senderName,\n    senderEmail: senderEmail,\n    subject: emailData.subject || 'No Subject',\n    content: emailContent,\n    hasAttachments: ($binary != undefined && Object.keys($binary).length > 0)\n  };\n  \n  items.push({ json: rowData, binary: item.binary });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        400
+      ],
+      "id": "4992a5ef-3e26-403a-b37f-67a279fd9321",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.hasAttachments}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "cb9f3dba-517b-46b7-80e2-cfd56594a894",
+      "name": "Has Attachments?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        336,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/process-email",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sender_email",
+              "value": "={{ $json.senderEmail }}"
+            },
+            {
+              "name": "subject",
+              "value": "={{$json.subject}}"
+            },
+            {
+              "name": "content",
+              "value": "={{$json.content}}"
+            },
+            {
+              "name": "attachment_analysis",
+              "value": "={{ $node[\"Analyze document\"]?.json?.output || 'No attachment' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "840b14be-a78d-4f0b-94bc-3557ddc1f908",
+      "name": "FastAPI Gateway",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        672,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "text": "Summarize the key information and any action items found in this attachment. Provide the summary in 2-3 concise sentences for a management dashboard.",
+        "inputType": "binary",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        224
+      ],
+      "id": "ccbba203-3a46-47c8-8ea0-d42c251daa2d",
+      "name": "Analyze document",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VR07vQM1DybOfh2l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Intelligent Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intelligent Filter": {
+      "main": [
+        [
+          {
+            "node": "Trigger Urgent Fire",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Save Blacklist",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Has Attachments?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Attachments?": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "FastAPI Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze document": {
+      "main": [
+        [
+          {
+            "node": "FastAPI Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5dc19687-24aa-4db2-87fe-90dca78dcd97",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8fed0a8d6c2a54f94de28c9ef58c5b89a59fc5e2c0ab498a8df1d24372114ead"
+  },
+  "id": "oA6nYM3QvUvjQzhY",
+  "tags": []
+}

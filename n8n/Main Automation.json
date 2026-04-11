@@ -1,0 +1,2307 @@
+{
+  "name": "Main Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const items = [];\n\nfor (const item of $input.all()) {\n  const emailData = item.json;\n  \n  // Handle sender information (unchanged)\n  let senderEmail = '';\n  let senderName = '';\n\n  if (emailData.from?.value?.[0]) {\n    senderEmail = emailData.from.value[0].address || '';\n    senderName = emailData.from.value[0].name || senderEmail;\n  } else if (emailData.from?.text) {\n    const emailMatch = emailData.from.text.match(/<([^>]+)>/) || \n                      emailData.from.text.match(/([^\\s]+@[^\\s]+)/);\n    senderEmail = emailMatch ? emailMatch[1] : emailData.from.text;\n    \n    const nameMatch = emailData.from.text.match(/^([^<]+)/);\n    senderName = nameMatch ? nameMatch[1].trim().replace(/\\\"/g, '') : senderEmail;\n  }\n\n  // Format date (unchanged)\n  const receivedDate = new Date(emailData.date || emailData.receivedTime);\n  const formattedDate = receivedDate.toLocaleString('en-US', {\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit',\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true\n  });\n\n  // FIXED CONTENT EXTRACTION\n  let emailContent = '';\n  \n  // 1. First priority: Plain text version\n  if (emailData.text) {\n    emailContent = emailData.text;\n  } \n  // 2. Second priority: HTML version (convert to plain text)\n  else if (emailData.html) {\n    emailContent = emailData.html\n      .replace(/<style[^>]*>.*?<\\/style>/gs, '')  // Remove CSS\n      .replace(/<[^>]*>/g, ' ')                   // Strip HTML tags\n      .replace(/\\s+/g, ' ')                       // Collapse whitespace\n      .trim();\n  }\n  // 3. Fallback to other possible fields\n  else if (emailData.body || emailData.textPlain || emailData.textHtml) {\n    emailContent = emailData.body || emailData.textPlain || emailData.textHtml;\n  }\n\n  // Truncate content if too long\n  const maxContentLength = 5000;\n  if (emailContent.length > maxContentLength) {\n    emailContent = emailContent.substring(0, maxContentLength) + '... [truncated]';\n  }\n\n  // Create row data\n  const rowData = {\n    mailid: $input.first().json.id,\n    mailThreadId: $input.first().json.threadId,\n    date: formattedDate,\n    senderName: senderName,\n    senderEmail: senderEmail,\n    subject: emailData.subject || 'No Subject',\n    content: emailContent,\n    labelIds: $input.first().json.labelIds\n  };\n  \n  items.push({ json: rowData });\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1664,
+        -896
+      ],
+      "id": "af9729f5-ce87-4c76-9325-2d8ced817cdf",
+      "name": "Code in JavaScript",
+      "retryOnFail": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.analysis.category }}",
+                    "rightValue": "Scheduling",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "87d108eb-60fd-460c-8f4e-9678e70152db"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Scheduling"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5a966e0d-1d83-4172-bb6f-e819656bf32e",
+                    "leftValue": "={{ $json.analysis.category }}",
+                    "rightValue": "Urgent_Fire",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Urgent Fire"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2233d332-66f3-4f8d-8267-786ae8419f22",
+                    "leftValue": "={{ $json.analysis.category }}",
+                    "rightValue": "Action_Required",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Action Required"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9dbc8f49-1e51-4c85-b37f-9dffb5f46cae",
+                    "leftValue": "={{ $json.analysis.category }}",
+                    "rightValue": "FYI_Read",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FYI Read"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c3ceb97f-9571-4c73-99f0-e648bd4c6052",
+                    "leftValue": "={{ $json.analysis.category }}",
+                    "rightValue": "Cold_Outreach",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Cold Outreach"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        -944
+      ],
+      "id": "0ea53b48-a533-4cc5-8a8a-f443a1a7d4fd",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Email Content: {{ $json.content }}",
+        "options": {
+          "systemMessage": "You are \"Cortex,\" an elite Executive Chief of Staff. Your job is to process incoming emails and structure them for automation.\n\nAnalyze the email content provided in the input.\n\nOutput STRICTLY a valid JSON object with the following fields (and NO conversational text):\n\n1. \"category\": Choose EXACTLY ONE from: [Scheduling, Urgent_Fire, Action_Required, FYI_Read, Cold_Outreach, Resolved].\n2. \"urgency_score\": An integer from 1 (Low) to 10 (Critical/Immediate).\n3. \"summary\": A concise, 5-10 word summary of the email's core intent.\n4. \"suggested_action_label\": A short 3-word label for a button (e.g., \"Book Meeting\", \"Draft Reply\", \"Archive\").\n\n### ENTITY EXTRACTION RULES (CONDITIONAL)\n\nBased on the 'category' you determine, you must extract the following specific entities into the \"entities\" object. If a field is not found, return null.\n\n1. IF CATEGORY = \"Scheduling\" (or \"Scheduling_New\", \"Scheduling_Reschedule\"):\n   - \"event_start\": Combine Date and Time into a single ISO 8601 string.\n       * STRICT RULE: Always use Indian Standard Time (IST) offset (+05:30).\n       * ASSUMPTION: Current year is 2026. If no year is given, use the next upcoming occurrence.\n       * DEFAULT: If date is given but no time, assume 09:00:00+05:30.\n       * Format: \"2026-01-19T23:00:00+05:30\"\n   - \"event_end\": ISO 8601 string. Only extract if explicitly mentioned (e.g., \"until 4pm\"). If not, return null.\n   - \"location\": Physical address or virtual link (Zoom/Meet).\n   - \"attendees\": List of names/emails mentioned in the body (excluding the sender).\n\n2. IF CATEGORY = \"Urgent_Fire\":\n   - \"issue_type\": One of [\"Technical_Failure\", \"Client_Escalation\", \"Deadline_Risk\", \"Security_Alert\"].\n   - \"error_code\": Any specific error codes (e.g., \"503\", \"404\", \"NullPointer\").\n   - \"deadline_time\": Specific time mentioned for a fix/reply (convert to ISO 8601 IST).\n   - \"affected_system\": What is broken? (e.g., \"Payment Gateway\", \"Server\", \"Login Page\").\n   - routing: Identify the department best suited to solve this (DevOps, Sales, Legal, Executive).\n   - sender_sentiment: (Angry, Neutral, Anxious).\n   - entities: Extract error codes, deadlines, or system names.\n\n3. IF CATEGORY = \"Action_Required\":\n  - \"task_summary\": \"Action verb + Object (e.g., 'Update Homepage Banner')\",\n  - \"due_date\": \"ISO 8601 Date (YYYY-MM-DD) or null\",\n  - \"priority\": \"High, Medium, or Low\",\n  - \"project_context\": \"Marketing, Dev, Sales, or General\",\n  - \"assignee_request\": \"Name of person asked to do it (usually 'Me')\"\n\n4. IF CATEGORY = \"Cold_Outreach\": You must analyze the sales pitch to determine if it is generic spam or a legitimate B2B opportunity. Output the following fields inside a cold_outreach_context object:\n  - company_name: The name of the agency or vendor (e.g., \"Acme SEO\", \"DevShop Inc\"). Return \"Unknown\" if not stated.\n  - service_category: Classify into one tag: \"SEO/Marketing\", \"Development\", \"Lead_Gen\", \"HR/Staffing\", or \"Tool/SaaS\".\n  - value_proposition: A 10-word summary of their specific offer (e.g., \"Promise 10 booked calls per week via LinkedIn\").\n  - credibility_score: Integer 0-5 based on personalization. 0 = Generic spam (Dear Sir/Madam). 5 = Highly personalized research referenced.\n  - is_spam: Boolean. Set true if it uses generic templates, fake urgency, or free email domains (gmail/yahoo for business).\n\n5. IF CATEGORY = \"FYI_Read\": You must extract structured data for a daily digest. Output the following fields inside an fyi_context object:\n  - topic_tag: Classify into exactly one: \"Newsletter\", \"Internal Update\", \"System Log\", or \"Market News\".\n  - summary: A concise headline (max 12 words) focusing on the result/news (e.g., \"Production Database migrated to v2.0\").\n  - sentiment_code: Return \"POSITIVE\" (Success/Wins), \"WARNING\" (Thresholds/Errors), or \"NEUTRAL\" (Info).\n  - relevance_score: Integer 1-5 (1=Low Value, 5=Critical Info).\n\n### OUTPUT JSON STRUCTURE\nReturn a valid JSON object:\n{\n  \"category\": \"Selected_Category_Here\",\n  \"urgency_score\": 1-10,\n  \"summary\": \"1-sentence summary\",\n  \"suggested_action\": \"Draft Reply / Book Calendar / Archive\",\n  \"entities\": {\n    // Fill this object based on the rules above.\n    // Example for Scheduling:\n    \"event_start\": \"2026-01-20T14:00:00+05:30\",\n    \"event_end\": null,\n    \"location\": \"Zoom\"\n  }\n}\n\nCLASSIFICATION RULES:\n- \"Scheduling\": Requests for meetings, interviews, or availability.\n- \"Urgent_Fire\": Angry tone, server issues, or deadlines < 24 hours.\n- \"Action_Required\": Requests for review, signing documents, assignments, or explicit questions.\n- \"Cold_Outreach\": GENERIC sales spam or marketing. (NOTE: If the email contains a Resume/CV or is a Job Application, classify as \"Action_Required\", NOT Cold_Outreach).\n- \"FYI_Read\": Newsletters, receipts, CC'd info.\n\nNOTE: DONT GIVE ANY OTHER THINGS RATHER THAN HIS STRICTLY"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1440,
+        -896
+      ],
+      "id": "3bb7d123-dd84-4d1c-8dd0-490a09d09d76",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        -672
+      ],
+      "id": "4df43f6b-0c8b-4adf-8deb-03c68bdea3b6",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pDyWDHmLUJi4glNd",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "krishmakadiya2005@gmail.com",
+          "mode": "list",
+          "cachedResultName": "krishmakadiya2005@gmail.com"
+        },
+        "timeMin": "={{ $json.analysis.entities.event_start }}",
+        "timeMax": "={{ $json.analysis.entities.event_end }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -640,
+        -1776
+      ],
+      "id": "b9060aff-e86a-45c0-b380-fea3db031fac",
+      "name": "Get availability in a calendar",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MRWy4X5Oprzp3mGC",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- STEP 1: Parse the Raw AI Output ---\nconst raw = $input.first().json.output;\n\n// Clean up markdown (```json ... ```) if the AI added it\nconst cleaned = raw\n  .replace(/```json/i, '')\n  .replace(/```/g, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  // Fallback if parsing fails (prevents workflow crash)\n  parsed = { category: \"Error\", entities: {}, parse_error: true };\n}\n\n// --- STEP 2: Handle Date Logic (The \"Scheduler\" Brain) ---\nconst entities = parsed.entities || {};\n\nif (entities.event_start) {\n  // A. Parse Start Time\n  // Check if string is valid, otherwise use \"Now\"\n  const startString = entities.event_start;\n  const startDate = (startString && startString !== \"null\") ? new Date(startString) : new Date();\n\n  // B. Calculate End Time Logic\n  const endString = entities.event_end;\n  // Check if endString is valid (not null, not \"null\", not empty)\n  const isValidEnd = endString && endString !== \"null\" && endString !== \"undefined\" && typeof endString === 'string' && endString.trim() !== \"\";\n\n  let endDate;\n  if (isValidEnd) {\n    endDate = new Date(endString);\n  } else {\n    // FALLBACK: Clone Start Date + 1 Hour\n    endDate = new Date(startDate.getTime());\n    endDate.setHours(endDate.getHours() + 1);\n  }\n\n  // C. Update the entities with standardized ISO strings\n  entities.event_start = startDate.toISOString();\n  entities.event_end = endDate.toISOString();\n  \n  // Optional: Add duration for debugging\n  entities.duration_minutes = (endDate - startDate) / 60000;\n}\n\n// --- STEP 3: Return the Final Combined Object ---\n// We pull email details from the *original* source (Code in JavaScript)\n// NOTE: Ensure 'Code in JavaScript' is the correct node name for your source data\nconst sourceEmail = $('Code in JavaScript').first().json; \n\nreturn {\n  email: sourceEmail,\n  analysis: {\n    ...parsed,\n    parse_error: false\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -896
+      ],
+      "id": "a3e83474-a981-4537-8241-3051845c9fe2",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "10585394-7a09-4144-9d23-04fb848aa0af",
+              "leftValue": "={{ $json.available }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -416,
+        -1776
+      ],
+      "id": "a3251b90-d93d-4022-a613-51477756d7fb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Meeting Confirmed: {{ $('Switch').item.json.email.subject }}",
+        "emailType": "html",
+        "message": "=<p>Hi {{ $('Switch').item.json.email.senderName }},</p>\n\n<p>Thanks for the note. The time you suggested works perfectly for me.</p>\n\n<p>I have sent a calendar invitation to lock it in. Looking forward to speaking with you then.</p>\n\n<p>Best regards,<br>\nKrish Makadiya</p>",
+        "options": {
+          "threadId": "={{ $('Switch').item.json.email.mailThreadId }}",
+          "sendTo": "={{ $('Switch').item.json.email.senderEmail }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -1856
+      ],
+      "id": "33e9749e-b929-4cfa-b46d-33aa26a4156d",
+      "name": "Create a draft",
+      "webhookId": "76082d6a-1a6d-453a-a8ec-6e3e9b6ca7c8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "krishmakadiya2005@gmail.com",
+          "mode": "list",
+          "cachedResultName": "krishmakadiya2005@gmail.com"
+        },
+        "timeMax": "={{ $now.plus({ day: 3 }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        -1664
+      ],
+      "id": "44a93984-c71c-44ea-b6c1-466a75471372",
+      "name": "Get many events",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MRWy4X5Oprzp3mGC",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ed74add1-817a-460b-ab11-4b20ccbb6913",
+              "name": "start",
+              "value": "={{ $json.start }}",
+              "type": "object"
+            },
+            {
+              "id": "071a04f1-db90-487a-9e2f-3950b7d9e7b8",
+              "name": "end",
+              "value": "={{ $json.end }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        32,
+        -1664
+      ],
+      "id": "b171c95c-484c-46ff-90c7-bfc2356c3437",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert Scheduler Agent operating in Indian Standard Time (IST).\nThe user requested a meeting at: {{ $('Switch').item.json.analysis.entities.event_start }}\nHowever, I am busy.\n\nHere is my Calendar data and which time I am busy for the next 3 days:\n{{ JSON.stringify($json) }}\n\nYOUR TASK:\n1. Parse the availability data. Treat all times as relevant to IST (UTC+5:30).\n2. Find the SINGLE BEST alternative 1-hour time slot.\n3. STRICT CONSTRAINT: The slot MUST be between 09:00 AM and 05:00 PM IST.\n4. Do not suggest times during lunch (13:00 - 14:00 IST).\n5. TIE-BREAKER: Select the EARLIEST valid slot.\n6. Start searching immediately after the \"requested meeting time\".\n\nOUTPUT RESTRICTIONS:\n- Do NOT output a list.\n- Output EXACTLY ONE JSON object.\n\nOUTPUT FORMAT:\nReturn a strictly valid JSON object with these fields:\n{\n  \"suggested_iso\": \"YYYY-MM-DDTHH:mm:ss+05:30\",  // MUST include the +05:30 offset.\n  \"human_readable\": \"Day, Month Date at HH:MM AM/PM\"\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        -1664
+      ],
+      "id": "de85dfd4-489f-49a3-b471-3c3585af37bd",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "pDyWDHmLUJi4glNd",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawData = $input.first().json.content.parts[0].text;\nconst data = JSON.parse(rawData);\n\n// 1. Parse the Start Time\nconst startDate = new Date(data.suggested_iso);\n\n// 2. Calculate End Time (Start + 1 Hour)\nconst endDate = new Date(startDate.getTime());\nendDate.setHours(endDate.getHours() + 1);\n\nfunction toISTString(dateObj) {\n  const options = { timeZone: 'Asia/Kolkata', hour12: false };\n  const istString = dateObj.toLocaleString('sv-SE', options);\n  return istString.replace(' ', 'T') + '+05:30';\n}\n\nconst str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn {\n  userId: username,\n  email: $('Switch').first().json.email,\n  analysis: $('Switch').first().json.analysis,\n  free_slot: {\n    suggested_time: data.suggested_iso,\n    end_time: toISTString(endDate),\n    readable_time: data.human_readable,\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -1664
+      ],
+      "id": "b21621f6-8094-4ae2-8a5e-05240f64b54c",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.email.subject }} (Rescheduling)",
+        "emailType": "html",
+        "message": "=<p>Hi {{ $json.email.senderName }},</p>\n\n<p>Thanks for the invite. I checked my calendar, but I unfortunately have a conflict at the time you suggested.</p>\n\n<p>I found a free slot on <strong>{{ $json.free_slot.readable_time }}</strong>. Would that work for you instead?</p>\n\n<p>If not, let me know and I can send over a few other options.</p>\n\n<p>Best regards,<br>\nKrish Makadiya</p>",
+        "options": {
+          "threadId": "",
+          "sendTo": "={{ $json.email.senderEmail }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        832,
+        -1664
+      ],
+      "id": "4672c74b-735e-4ea8-88dd-bea99239e98e",
+      "name": "Create a draft1",
+      "webhookId": "e35b1343-6453-40d3-a770-b7ba75b7b397",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the Routing Tag from your AI node's output\n// We add \"|| 'Fallback'\" to handle cases where the AI might return null.\nconst routingTag = $input.first().json.analysis.entities.routing || \"Fallback\";\n\n// 2. Paste your JSON Contact List here\nconst contactList = {\n  \"DevOps\": {\n    \"name\": \"Alex Chen\",\n    \"email\": \"alex.ops@somailer.com\",\n    \"phone\": \"+15550109988\"\n  },\n  \"Sales\": {\n    \"name\": \"Sarah Miller\",\n    \"email\": \"sarah.sales@somailer.com\",\n    \"phone\": \"+15550123344\"\n  },\n  \"Legal\": {\n    \"name\": \"Legal Team\",\n    \"email\": \"legal@somailer.com\",\n    \"phone\": \"+15550198877\"\n  },\n  \"Fallback\": {\n    \"name\": \"Admin\",\n    \"email\": \"admin@somailer.com\",\n    \"phone\": \"+15559990000\"\n  }\n};\n\n// 3. Find the matching contact data\n// If the tag exists (e.g., \"DevOps\"), use it. If not, default to \"Fallback\".\nconst targetData = contactList[routingTag] || contactList[\"Fallback\"];\n\n// 4. Output ONLY the clean data needed for the next node\nreturn {\n  json: {\n    routed_team: routingTag,\n    recipient_name: targetData.name,\n    recipient_email: targetData.email,\n    recipient_phone: targetData.phone,\n    \n    // Pass through the original summary so you can use it in the message body\n    alert_message: $input.first().json.analysis.summary\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -1280
+      ],
+      "id": "ff0a0d0c-19de-42aa-aa42-4f1d839a0aea",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e76c43b0-7c16-4dbc-8714-a989d87e56ad",
+                    "leftValue": "={{ $('Switch').item.json.analysis.urgency_score }}",
+                    "rightValue": 9,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Critical"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0829f9e8-ff95-49a1-8a6a-a9acc602f8e3",
+                    "leftValue": "={{ $('Switch').item.json.analysis.urgency_score }}",
+                    "rightValue": 7,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "High"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b72d8d5b-20ee-478a-acd9-4837f7ee66d5",
+                    "leftValue": "={{ $('Switch').item.json.analysis.urgency_score }}",
+                    "rightValue": 7,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Medium"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        -1296
+      ],
+      "id": "21d2e61a-ecd8-4fa4-b3aa-1869a1fc0911",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "DEMO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10006",
+          "mode": "list",
+          "cachedResultName": "Bug"
+        },
+        "summary": "={{ $('Switch').item.json.analysis.entities.routing }}({{ $('Switch').item.json.analysis.entities.issue_type }}): {{ $('Switch').item.json.analysis.summary }}",
+        "additionalFields": {
+          "priority": {
+            "__rl": true,
+            "value": "1",
+            "mode": "list",
+            "cachedResultName": "Highest"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -1472
+      ],
+      "id": "b6380b93-bea9-48e9-979b-17604710895d",
+      "name": "Create an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jiraVersion": "cloud",
+        "resource": "issue",
+        "operation": "notify",
+        "issueKey": "={{ $json.key }}",
+        "jsonParameters": false,
+        "additionalFields": {
+          "subject": "={{ $('Switch').item.json.analysis.entities.issue_type }}: {{ $('Switch').item.json.analysis.entities.affected_system }}",
+          "textBody": "=Check the issue fast it says: {{ $('Switch').item.json.analysis.summary }}"
+        },
+        "notificationRecipientsUi": {
+          "notificationRecipientsValues": {
+            "reporter": true,
+            "assignee": true,
+            "watchers": true,
+            "voters": true,
+            "users": [],
+            "groups": [
+              "jira-users-krishmakadiya2005"
+            ]
+          }
+        },
+        "notificationRecipientsRestrictionsUi": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -1472
+      ],
+      "id": "0fc0f854-3c3a-4891-8363-0d7999890e8a",
+      "name": "Create an email notification for an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "call",
+        "from": "+13465509789",
+        "to": "+918263081960",
+        "message": "=This is a SoMail Critical Alert for {{ $('Switch1').item.json.recipient_name }}.\n\nWe have detected a Critical Severity failure on the {{ $('Switch').item.json.analysis.entities.affected_system }}. The error reported is: {{ $('Switch').item.json.analysis.summary }}.   I repeat: The {{ $('Switch').item.json.analysis.entities.affected_system }} is down. \n\nPlease check the #prod-incidents Slack channel immediately. Goodbye.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -1472
+      ],
+      "id": "844d6a83-39ca-4527-8ae2-cf98e4ae3205",
+      "name": "Make a call",
+      "credentials": {
+        "twilioApi": {
+          "id": "X6lSTUsSnop36EA1",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "DEMO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10006",
+          "mode": "list",
+          "cachedResultName": "Bug"
+        },
+        "summary": "={{ $('Switch').item.json.analysis.entities.routing }}({{ $('Switch').item.json.analysis.entities.issue_type }}): {{ $('Switch').item.json.analysis.summary }}",
+        "additionalFields": {
+          "priority": {
+            "__rl": true,
+            "value": "2",
+            "mode": "list",
+            "cachedResultName": "High"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -1280
+      ],
+      "id": "95cff11e-aa93-493e-bcfb-28a7eb139ddd",
+      "name": "Create an issue1",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jiraVersion": "cloud",
+        "resource": "issue",
+        "operation": "notify",
+        "issueKey": "={{ $json.key }}",
+        "jsonParameters": false,
+        "additionalFields": {
+          "subject": "={{ $('Switch').item.json.analysis.entities.issue_type }}: {{ $('Switch').item.json.analysis.entities.affected_system }}",
+          "textBody": "=Check the issue fast it says: {{ $('Switch').item.json.analysis.summary }}"
+        },
+        "notificationRecipientsUi": {
+          "notificationRecipientsValues": {
+            "reporter": true,
+            "assignee": true,
+            "watchers": true,
+            "voters": true,
+            "users": [],
+            "groups": [
+              "jira-users-krishmakadiya2005"
+            ]
+          }
+        },
+        "notificationRecipientsRestrictionsUi": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -1280
+      ],
+      "id": "8db69a89-1a75-42ca-a31e-1a7e095ef2ea",
+      "name": "Create an email notification for an issue1",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "from": "+13465509789",
+        "to": "+918263081960",
+        "message": "=[SoMailer Alert] High Priority Issue Detected. ⚠️\n\nSummary: {{ $('Switch').item.json.analysis.summary }}\nSender: {{ $('Switch').item.json.email.sender_name }}: {{ $('Switch').item.json.email.sender_mail }}\nTicket Created: {{ $('Create an issue1').item.json.key }} : {{ $('Create an issue1').item.json.id }}\n\nPlease review soon.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -1280
+      ],
+      "id": "4527aabe-dace-4a6b-bb89-aa92f799b1f6",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "X6lSTUsSnop36EA1",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR4QV82K",
+          "mode": "list",
+          "cachedResultName": "prod-issues"
+        },
+        "text": "=<!channel> 🚨 *CRITICAL ALERT: {{ $('Switch').item.json.analysis.entities.affected_system }} Failure*\n\n*Severity P0* | Score: {{ $('Switch').item.json.analysis.urgency_score }}/10\n\n*Issue Summary:*\n> {{ $('Switch').item.json.analysis.summary }}\n\n*Technical Context:*\n• *Error Code:* `{{ $('Switch').item.json.analysis.entities.error_code }}`\n• *Assigned Team:* {{ $('Switch').item.json.analysis.entities.routing }}\n• *Reporter:* {{ $('Switch').item.json.email.sender_name }}: {{ $('Switch').item.json.email.sender_mail }}\n\n*Action Taken:*\n✅ SMS Alert sent to On-Call.\n✅ Jira Ticket Created.\n\nJira Ticket ID: {{ $('Create an issue2').item.json.id }}\nJira Ticket Link: {{ $('Create an issue2').item.json.self }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        320,
+        -1088
+      ],
+      "id": "cf31197b-0790-48df-ae13-8eb286f01b27",
+      "name": "Send a message",
+      "webhookId": "e6e6be1b-751c-4c33-8aa3-6fa5a1f72026",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "DEMO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10006",
+          "mode": "list",
+          "cachedResultName": "Bug"
+        },
+        "summary": "={{ $('Switch').item.json.analysis.entities.routing }}({{ $('Switch').item.json.analysis.entities.issue_type }}): {{ $('Switch').item.json.analysis.summary }}",
+        "additionalFields": {
+          "priority": {
+            "__rl": true,
+            "value": "3",
+            "mode": "list",
+            "cachedResultName": "Medium"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        -1088
+      ],
+      "id": "e86e053b-aa9b-42e1-9ba3-e74e4d909f9b",
+      "name": "Create an issue2",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jiraVersion": "cloud",
+        "resource": "issue",
+        "operation": "notify",
+        "issueKey": "={{ $json.key }}",
+        "jsonParameters": false,
+        "additionalFields": {
+          "subject": "={{ $('Switch').item.json.analysis.entities.issue_type }}: {{ $('Switch').item.json.analysis.entities.affected_system }}",
+          "textBody": "=Check the issue fast it says: {{ $('Switch').item.json.analysis.summary }}"
+        },
+        "notificationRecipientsUi": {
+          "notificationRecipientsValues": {
+            "reporter": true,
+            "assignee": true,
+            "watchers": true,
+            "voters": true,
+            "users": [],
+            "groups": [
+              "jira-users-krishmakadiya2005"
+            ]
+          }
+        },
+        "notificationRecipientsRestrictionsUi": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -1088
+      ],
+      "id": "dc79fcee-73c7-448f-957f-14633b17d0d0",
+      "name": "Create an email notification for an issue2",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2fadf551-866a-807a-ab4f-c76a6317e9ae",
+          "mode": "list",
+          "cachedResultName": "2fadf551-866a-807a-ab4f-c76a6317e9ae",
+          "cachedResultUrl": "https://www.notion.so/2fadf551866a807aab4fc76a6317e9ae"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Date|date",
+              "includeTime": false,
+              "date": "={{ $json.analysis.entities.due_date }}",
+              "timezone": "Asia/Kolkata"
+            },
+            {
+              "key": "Priority|select",
+              "selectValue": "={{ $json.analysis.entities.priority }}"
+            },
+            {
+              "key": "Source Email|email",
+              "emailValue": "={{ $json.email.sender_mail }}"
+            },
+            {
+              "key": "TaskName|title",
+              "title": "={{ $json.analysis.entities.task_summary }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        -896
+      ],
+      "id": "5ae7c662-447a-45a3-bbfd-a69b0b6ba3cc",
+      "name": "Create a database page",
+      "credentials": {
+        "notionApi": {
+          "id": "dWKE3b6kUXO0T8Dy",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Re: {{ $('Switch').item.json.email.subject }}",
+        "message": "=Hi {{ $('Switch').item.json.email.sender_name }},  \nThanks for the heads up. I've added this to my sprint board.  \n\nContext: {{ $('Switch').item.json.analysis.entities.task_summary }}\nTarget Date:  {{ $('Switch').item.json.analysis.entities.due_date }}\n\nI'll keep you posted.  \nBest, SoMailer Agent",
+        "options": {
+          "sendTo": "={{ $('Switch').item.json.email.sender_mail }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -896
+      ],
+      "id": "307ac9ec-e6f5-4da8-adf2-bc8984c3ce81",
+      "name": "Create a draft2",
+      "webhookId": "b640d05e-45d3-4de0-8969-2c1bdabf57a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR210HN3",
+          "mode": "list",
+          "cachedResultName": "social"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"header\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\"text\": \"Action Required: {{ $('Switch').item.json.analysis.entities.task_summary }}\",\n\t\t\t\t\"emoji\": true\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"fields\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Priority:*\\n🔴 {{ $('Switch').item.json.analysis.entities.priority }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"*Due Date:*\\n📅 {{ $('Switch').item.json.analysis.entities.due_date }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"*From:* {{ $('Switch').item.json.email.sender_name }}\\n*Subject:* {{ $('Switch').item.json.email.subject }}\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"context\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\t\"text\": \"📝 *Task Note:* This has been added to Notion.\"\n\t\t\t\t}\n\t\t\t]\n\t\t},\n\t\t{\n\t\t\t\"type\": \"actions\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"button\",\n\t\t\t\t\t\"text\": {\n\t\t\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\t\t\"text\": \"✉️ Open Email Thread\",\n\t\t\t\t\t\t\"emoji\": true\n\t\t\t\t\t},\n\t\t\t\t\t\"style\": \"primary\",\n\t\t\t\t\t\"url\": \"https://mail.google.com/mail/u/0/#inbox/{{ $json.message.threadId }}\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"button\",\n\t\t\t\t\t\"text\": {\n\t\t\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\t\t\"text\": \"✅ View in Notion\",\n\t\t\t\t\t\t\"emoji\": true\n\t\t\t\t\t},\n\t\t\t\t\t\"url\": \"{{ $('Create a database page').item.json.url }}\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -192,
+        -896
+      ],
+      "id": "6bd97cd9-cf82-41f4-b4b2-d115de18827a",
+      "name": "Send a message1",
+      "webhookId": "401ebdc9-a46a-4f94-809d-c94d3d48a1b7",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_8811156180324330360"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -512
+      ],
+      "id": "bca619c9-67d0-4cb9-973a-ad6e3f3d5e28",
+      "name": "Add label to message",
+      "webhookId": "cd43cad5-2e57-4f5c-b864-043258337e18",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -704
+      ],
+      "id": "0c133e57-9495-420b-85c1-f4ba0348070e",
+      "name": "Remove label from message",
+      "webhookId": "cd43cad5-2e57-4f5c-b864-043258337e18",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1888,
+        -896
+      ],
+      "id": "6b394129-5b4f-4db6-97c4-14880714c9d9",
+      "name": "Gmail Trigger",
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "2fadf551-866a-804c-a025-e83cd564c194",
+          "mode": "list",
+          "cachedResultName": "FYI Reads",
+          "cachedResultUrl": "https://www.notion.so/2fadf551866a804ca025e83cd564c194"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Date|date",
+              "date": "={{ $json.email.date }}"
+            },
+            {
+              "key": "Sender Email|email",
+              "emailValue": "={{ $json.email.sender_mail }}"
+            },
+            {
+              "key": "Sender Name|rich_text",
+              "textContent": "={{ $json.email.sender_name }}"
+            },
+            {
+              "key": "Sentiment|select",
+              "selectValue": "={{ $json.analysis.entities.fyi_context.sentiment_code }}"
+            },
+            {
+              "key": "Status|select",
+              "selectValue": "PENDING"
+            },
+            {
+              "key": "Summary|rich_text",
+              "textContent": "={{ $json.analysis.entities.fyi_context.summary }}"
+            },
+            {
+              "key": "Topic Tag|title",
+              "title": "={{ $json.analysis.entities.fyi_context.topic_tag }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -640,
+        -608
+      ],
+      "id": "e42573c7-33aa-464c-b3a8-1da62fd82518",
+      "name": "Create a database page1",
+      "credentials": {
+        "notionApi": {
+          "id": "dWKE3b6kUXO0T8Dy",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4884f338-c5e2-4be1-a110-aa716a7de3d4",
+              "leftValue": "={{ $json.analysis.entities.cold_outreach_context.is_spam }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "24697a59-79a3-4e6a-94f9-2d22aaa1a5e4",
+              "leftValue": "={{ $json.analysis.entities.cold_outreach_context.credibility_score }}",
+              "rightValue": 4,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -640,
+        -224
+      ],
+      "id": "142b6025-e047-41cf-a79a-9ca409ca4baa",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_142096125795621175"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -320
+      ],
+      "id": "f8f1e358-a8df-48e1-a7b6-1be28f9247fd",
+      "name": "Add label to message1",
+      "webhookId": "508e8bab-8321-474c-909d-6f71585ccad4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -320
+      ],
+      "id": "9fb4d16c-9463-4d67-89c6-488cb1bf1828",
+      "name": "Remove label from message1",
+      "webhookId": "508e8bab-8321-474c-909d-6f71585ccad4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "=Re: {{ $('If1').item.json.email.subject }}",
+        "message": "=Hello there, \nThanks for the note. We aren't currently looking for {{ $('If1').item.json.analysis.entities.cold_outreach_context.service_category }} partners, but your point about {{ $('If1').item.json.analysis.entities.cold_outreach_context.value_proposition }} was interesting. I've filed this away and will reach out if our needs change. \nBest, SoMailer Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        32,
+        -320
+      ],
+      "id": "14b7cb10-d4b8-4b4e-b1ea-d39502da030f",
+      "name": "Create a draft3",
+      "webhookId": "508e8bab-8321-474c-909d-6f71585ccad4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "Label_142096125795621175"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -416,
+        -128
+      ],
+      "id": "5bf6a3ef-70ab-44a1-8579-f98b71bf30b2",
+      "name": "Add label to message2",
+      "webhookId": "508e8bab-8321-474c-909d-6f71585ccad4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeLabels",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}",
+        "labelIds": [
+          "INBOX"
+        ]
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        -128
+      ],
+      "id": "1b6f2839-78f9-4cd4-8cef-e253724fcfe7",
+      "name": "Remove label from message2",
+      "webhookId": "508e8bab-8321-474c-909d-6f71585ccad4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XxHRoupgP0wUzD7y",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/scheduling",
+        "documentId": "=",
+        "columns": "draft_message, mail, analysis, event, status"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -1856
+      ],
+      "id": "e9301eb3-9411-4017-8eed-5d3b987be024",
+      "name": "Create a document",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn {\n  userId: username,\n  draft_message: {\n    message_id: $('Create a draft').first().json.message.id,\n    id: $('Create a draft').first().json.id,\n    threadId: $('Create a draft').first().json.message.threadId,\n    labels: $('Create a draft').first().json.message.labelIds,\n    content: \"<p>Hi\" + \" \" + $('Switch').first().json.email.sender_name + \",</p> \" + \"<p>Thanks for the note. The time you suggested works perfectly for me.</p> <p>I have sent a calendar invitation to lock it in. Looking forward to speaking with you then.</p> <p>Best regards,<br> Krish Makadiya</p>\"\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    category: $('Code in JavaScript2').first().json.analysis.category,\n    urgency_score: $('Code in JavaScript2').first().json.analysis.urgency_score,\n    summary: $('Code in JavaScript2').first().json.analysis.summary\n  },\n  event:{\n    start: $input.first().json.start,\n    end: $input.first().json.end,\n    id: $input.first().json.id,\n    status: $input.first().json.status\n  },\n  status: $input.first().json.status\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -1856
+      ],
+      "id": "b9d2bb49-0621-4485-ae53-81de30512344",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $('Code in JavaScript3').item.json.userId }}/scheduling",
+        "documentId": "=",
+        "columns": "draft_message, mail, analysis,  event, status, mode"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        1504,
+        -1664
+      ],
+      "id": "4caef998-fbbb-4fc7-9346-d49933dff7ed",
+      "name": "Create a document1",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn {\n  userId: username,\n  draft_message: {\n    message_id: $('Create a draft1').first().json.message.id,\n    id: $('Create a draft1').first().json.id,\n    threadId: $('Create a draft1').first().json.message.threadId,\n    labels: $('Create a draft1').first().json.message.labelIds,\n    content: \"<p>Hi\" + \" \" + $('Switch').first().json.email.sender_name + \",</p> \" + \"<p>Thanks for the invite. I checked my calendar, but I unfortunately have a conflict at the time you suggested.</p><p>I found a free slot on <strong>{{ $json.free_slot.readable_time }}</strong>. Would that work for you instead?</p><p>If not, let me know and I can send over a few other options.</p><p>Best regards,<br>Krish Makadiya</p>\"\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    category: $('Code in JavaScript2').first().json.analysis.category,\n    urgency_score: $('Code in JavaScript2').first().json.analysis.urgency_score,\n    summary: $('Code in JavaScript2').first().json.analysis.summary\n  },\n  event:{\n    start: $input.first().json.start,\n    end: $input.first().json.end,\n    id: $input.first().json.id,\n    status: $input.first().json.status\n  },\n  status: \"ongoing\",\n  mode: \"rescheduling\"\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -1664
+      ],
+      "id": "eefb8dfd-a7cb-43ee-b393-e75f97ca6492",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  slack: {\n    text: $input.first().json.message.text,\n  },\n  jira: {\n    ticket_link: $('Create an issue2').first().json.self\n  },\n  alert: {\n    routed_team: $('Switch1').first().json.routed_team,\n    recipient_name: $('Switch1').first().json.recipient_name,\n    recipient_email: $('Switch1').first().json.recipient_email,\n    recipient_phone: $('Switch1').first().json.recipient_phone,\n    alert_message: $('Switch1').first().json.alert_message\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    category: $('Switch').first().json.analysis.category,\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -1088
+      ],
+      "id": "ef87a027-516c-45b0-a6fc-ef116864f1f3",
+      "name": "Code in JavaScript6"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/urgent_fire/",
+        "columns": "slack, jira, alert, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        832,
+        -1088
+      ],
+      "id": "92792bdf-836a-440a-a088-560359345aa9",
+      "name": "Create a document2",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  slack: {\n    text: $('Send a message2').first().json.message.text,\n  },\n  jira: {\n    ticket_link: $('Create an issue1').first().json.self\n  },\n  alert: {\n    routed_team: $('Switch1').first().json.routed_team,\n    recipient_name: $('Switch1').first().json.recipient_name,\n    recipient_email: $('Switch1').first().json.recipient_email,\n    recipient_phone: $('Switch1').first().json.recipient_phone,\n    alert_message: $('Switch1').first().json.alert_message\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    category: $('Switch').first().json.analysis.category,\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -1280
+      ],
+      "id": "520a50de-893a-4d31-8be9-cb761cd77f7c",
+      "name": "Code in JavaScript7"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/urgent_fire/",
+        "columns": "slack, jira, alert, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        -1280
+      ],
+      "id": "8ee4c39f-71c9-44a3-9874-89b084bc0678",
+      "name": "Create a document3",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR4QV82K",
+          "mode": "list",
+          "cachedResultName": "prod-issues"
+        },
+        "text": "=<!channel> 🚨 *CRITICAL ALERT: {{ $('Switch').item.json.analysis.entities.affected_system }} Failure*\n\n*Severity P0* | Score: {{ $('Switch').item.json.analysis.urgency_score }}/10\n\n*Issue Summary:*\n> {{ $('Switch').item.json.analysis.summary }}\n\n*Technical Context:*\n• *Error Code:* `{{ $('Switch').item.json.analysis.entities.error_code }}`\n• *Assigned Team:* {{ $('Switch').item.json.analysis.entities.routing }}\n• *Reporter:* {{ $('Switch').item.json.email.sender_name }}: {{ $('Switch').item.json.email.sender_mail }}\n\n*Action Taken:*\n✅ SMS Alert sent to On-Call.\n✅ Jira Ticket Created.\n\nJira Ticket ID: {{ $('Create an issue1').item.json.id }}\nJira Ticket Link: {{ $('Create an issue1').item.json.self }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        320,
+        -1280
+      ],
+      "id": "df95c71a-1de9-4b8e-9be6-ba1b80a17d0c",
+      "name": "Send a message2",
+      "webhookId": "e6e6be1b-751c-4c33-8aa3-6fa5a1f72026",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR4QV82K",
+          "mode": "list",
+          "cachedResultName": "prod-issues"
+        },
+        "text": "=<!channel> 🚨 *CRITICAL ALERT: {{ $('Switch').item.json.analysis.entities.affected_system }} Failure*\n\n*Severity P0* | Score: {{ $('Switch').item.json.analysis.urgency_score }}/10\n\n*Issue Summary:*\n> {{ $('Switch').item.json.analysis.summary }}\n\n*Technical Context:*\n• *Error Code:* `{{ $('Switch').item.json.analysis.entities.error_code }}`\n• *Assigned Team:* {{ $('Switch').item.json.analysis.entities.routing }}\n• *Reporter:* {{ $('Switch').item.json.email.sender_name }}: {{ $('Switch').item.json.email.sender_mail }}\n\n*Action Taken:*\n✅ SMS Alert sent to On-Call.\n✅ Jira Ticket Created.\n\nJira Ticket ID: {{ $('Create an issue').item.json.id }}\nJira Ticket Link: {{ $('Create an issue').item.json.self }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        320,
+        -1472
+      ],
+      "id": "8a050476-73a1-4f6a-804a-7404dba6cd38",
+      "name": "Send a message3",
+      "webhookId": "e6e6be1b-751c-4c33-8aa3-6fa5a1f72026",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  slack: {\n    text: $('Send a message3').first().json.message.text,\n  },\n  jira: {\n    ticket_link: $('Create an issue').first().json.self,\n  },\n  alert: {\n    routed_team: $('Switch1').first().json.routed_team,\n    recipient_name: $('Switch1').first().json.recipient_name,\n    recipient_email: $('Switch1').first().json.recipient_email,\n    recipient_phone: $('Switch1').first().json.recipient_phone,\n    alert_message: $('Switch1').first().json.alert_message\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    category: $('Switch').first().json.analysis.category,\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -1472
+      ],
+      "id": "283dafe1-5c6b-44ac-a018-8093834ea683",
+      "name": "Code in JavaScript8"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/urgent_fire/",
+        "columns": "slack, jira, alert, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        -1472
+      ],
+      "id": "303025f8-de1f-446b-b0bf-e153bf047c69",
+      "name": "Create a document4",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  slack: {\n    text: $input.first().json.message.text,\n  },\n  notion: {\n    name: $('Create a database page').first().json.name,\n    url: $('Create a database page').first().json.url,\n    property_date: $('Create a database page').first().json.property_date,\n    property_priority: $('Create a database page').first().json.property_priority\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -896
+      ],
+      "id": "edac5d75-5768-4965-814f-e1f5ee685bcd",
+      "name": "Code in JavaScript9"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/action_required/",
+        "columns": "slack, notion, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -896
+      ],
+      "id": "43dc761c-79b5-46a1-a0e5-62ed594f6ea1",
+      "name": "Create a document5",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  notion: {\n    name: $('Create a database page1').first().json.name,\n    url: $('Create a database page1').first().json.url,\n    property_summary: $('Create a database page1').first().json.property_summary,\n    property_sender_name: $('Create a database page1').first().json.property_sender_name,\n    property_sender_email: $('Create a database page1').first().json.property_sender_email,\n    property_status: $('Create a database page1').first().json.property_status,\n    property_sentiment: $('Create a database page1').first().json.property_sentiment,\n    property_topic_tag: $('Create a database page1').first().json.property_topic_tag\n  },\n  mail: $('Switch').first().json.email,\n  analysis: {\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    entities: $('Switch').first().json.analysis.entities.fyi_context\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -608
+      ],
+      "id": "097a07f4-9f22-4fce-988a-aa174504a2a9",
+      "name": "Code in JavaScript10"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/fyi_reads/",
+        "columns": "notion, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        -608
+      ],
+      "id": "fb2f8b3d-1f1a-4837-bf32-029be94c60a4",
+      "name": "Create a document6",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  draft_mail: $input.first().json.message,\n  mail: $('Switch').first().json.email,\n  analysis: {\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -320
+      ],
+      "id": "79fe23f5-231a-41d4-8b54-a47d756843a7",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/cold_outreach",
+        "columns": "draft_mail, mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        -320
+      ],
+      "id": "5df88039-63b9-4de6-9b11-6780f0d64d01",
+      "name": "Create a document7",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const str = $('Gmail Trigger').first().json.headers[\"delivered-to\"];\nconst username = str.split(\":\")[1].trim().split(\"@\")[0];\n\nreturn{\n  userId: username,\n  mail: $('Switch').first().json.email,\n  analysis: {\n    urgency_score: $('Switch').first().json.analysis.urgency_score,\n    summary: $('Switch').first().json.analysis.summary,\n    entities: $('Switch').first().json.analysis.entities\n  }\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -128
+      ],
+      "id": "284ad9c3-87ea-4946-b30a-87696e3d16fd",
+      "name": "Code in JavaScript12"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "create",
+        "projectId": "somail-ffbf4",
+        "collection": "=user/{{ $json.userId }}/cold_outreach",
+        "columns": "mail, analysis"
+      },
+      "type": "n8n-nodes-base.googleFirebaseCloudFirestore",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        -128
+      ],
+      "id": "84d33e81-51ea-4738-a975-684fd60c7e75",
+      "name": "Create a document8",
+      "credentials": {
+        "googleApi": {
+          "id": "zyEyO1oS8YWyDEA9",
+          "name": "SoMail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "krishmakadiya2005@gmail.com",
+          "mode": "list",
+          "cachedResultName": "krishmakadiya2005@gmail.com"
+        },
+        "start": "={{ $('Switch').item.json.analysis.entities.event_start }}",
+        "end": "={{ $('Switch').item.json.analysis.entities.event_end }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        -1856
+      ],
+      "id": "935949f7-f659-435c-af1e-4d25f452cf73",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MRWy4X5Oprzp3mGC",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "krishmakadiya2005@gmail.com",
+          "mode": "list",
+          "cachedResultName": "krishmakadiya2005@gmail.com"
+        },
+        "start": "={{ $('Code in JavaScript3').item.json.free_slot.suggested_time }}",
+        "end": "={{ $('Code in JavaScript3').item.json.free_slot.end_time }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        -1664
+      ],
+      "id": "26385fb5-ec07-4b12-8585-737a9c070c04",
+      "name": "Create an event1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MRWy4X5Oprzp3mGC",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get availability in a calendar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a database page",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get many events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Create a draft1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Create an issue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create an issue1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create an issue2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an issue": {
+      "main": [
+        [
+          {
+            "node": "Create an email notification for an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an email notification for an issue": {
+      "main": [
+        [
+          {
+            "node": "Send a message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an issue1": {
+      "main": [
+        [
+          {
+            "node": "Create an email notification for an issue1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an email notification for an issue1": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an issue2": {
+      "main": [
+        [
+          {
+            "node": "Create an email notification for an issue2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an email notification for an issue2": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page": {
+      "main": [
+        [
+          {
+            "node": "Create a draft2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft2": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove label from message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page1": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Add label to message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Add label to message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Add label to message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message1": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove label from message1": {
+      "main": [
+        [
+          {
+            "node": "Create a draft3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message2": {
+      "main": [
+        [
+          {
+            "node": "Remove label from message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft1": {
+      "main": [
+        [
+          {
+            "node": "Create an event1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Create a document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make a call": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript6": {
+      "main": [
+        [
+          {
+            "node": "Create a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript7": {
+      "main": [
+        [
+          {
+            "node": "Create a document3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an SMS/MMS/WhatsApp message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message2": {
+      "main": [
+        [
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message3": {
+      "main": [
+        [
+          {
+            "node": "Make a call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript8": {
+      "main": [
+        [
+          {
+            "node": "Create a document4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript9": {
+      "main": [
+        [
+          {
+            "node": "Create a document5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript10": {
+      "main": [
+        [
+          {
+            "node": "Create a document6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a draft3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "Create a document7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript12": {
+      "main": [
+        [
+          {
+            "node": "Create a document8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove label from message2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "8f898904-66ff-4643-a22d-c915cf59296c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43110500a7b05a4d16a8157c32923cf4c458720f34470017eed8086f1077dc6b"
+  },
+  "id": "5wx9KbIfSWsRwtyC",
+  "tags": []
+}

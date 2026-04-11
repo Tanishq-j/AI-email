@@ -9,11 +9,11 @@ from app.dispatcher import dispatch_command
 app = FastAPI(title="Smart Email Assistant Gateway", version="1.0.0")
 
 class EmailInput(BaseModel):
-    sender: str
-    receiver: str
+    sender_email: str
     subject: str
-    body: str
+    content: str
     is_1on1: bool = False
+    attachment_analysis: str = ""
 
 @app.post("/process-email")
 def process_email_endpoint(email: EmailInput, background_tasks: BackgroundTasks):

@@ -1,0 +1,559 @@
+{
+  "name": "Post Urgent_Fire",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c69bd0d4-a726-4c1c-a9a7-bf7a9337c32a",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        80
+      ],
+      "id": "a4121efd-0a9d-4095-b6a0-cd529435d887",
+      "name": "Webhook",
+      "webhookId": "c69bd0d4-a726-4c1c-a9a7-bf7a9337c32a"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.status }}",
+                    "rightValue": "resolved",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8780eaf6-9944-464c-a06e-761b7c9ae05f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Resolved"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d3c42ad5-62d7-4165-ab9c-66115ac7906c",
+                    "leftValue": "={{ $json.body.status }}",
+                    "rightValue": "escalated",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Escalate"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b08c33ca-2152-474e-830f-cb0465f0506b",
+                    "leftValue": "={{ $json.body.status }}",
+                    "rightValue": "false_positive",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "False Positive"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        64
+      ],
+      "id": "3a6fe92a-db0d-4169-b1a5-89e87b56f2b9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR4QV82K",
+          "mode": "list",
+          "cachedResultName": "prod-issues"
+        },
+        "text": "=The Following Issue has been Resolved: {{ $json.body.alert.alert_message }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        432,
+        -112
+      ],
+      "id": "302d3220-feb0-44d7-9535-9c55bf2d32b3",
+      "name": "Send a message",
+      "webhookId": "3199ed55-ffd1-4f1d-9e84-1f5de394478f",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "email_actions",
+        "columns": "payload"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1328,
+        -112
+      ],
+      "id": "201e9b87-96f4-4d08-bf33-96cf46bb75a5",
+      "name": "Create or update a document",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Shared Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0ABR4QV82K",
+          "mode": "list",
+          "cachedResultName": "prod-issues"
+        },
+        "text": "=<!channel> \ud83d\udd25 *ESCALATION TRIGGERED: {{ $('Webhook').item.json.body.analysis.entities.issue_type }}: {{ $('Webhook').item.json.body.analysis.entities.affected_system }}*  \n*Status:* \ud83d\udd34 **CRITICAL (P0)** | *Urgency Score:* {{ $('Webhook').item.json.body.analysis.urgency_score }}/10\n\n*Executive Summary:* > \n{{ $('Webhook').item.json.body.analysis.summary }}\n\n*Source Intelligence:* \n\u2022 *Sender:* {{ $('Webhook').item.json.body.mail.sender_name }} ({{ $('Webhook').item.json.body.mail.sender_mail }}) \n\u2022 *Category/Domain:* {{ $('Webhook').item.json.body.analysis.entities.affected_system }}\n\u2022 *Reference Key:* `{{ $('Webhook').item.json.body.analysis.entities.entities.error_code }}` \n\u2022 *Routing To:* {{ $('Webhook').item.json.body.analysis.entities.routing }}\n\n*Automated Response:* \n\u2705 **Escalation Protocol Activated** (Voice Call Dispatched) \n\u2705 **Incident Logged**  \n\n*Tracking Details:* \n\ud83c\udd94 Ticket ID: {{ $('Webhook').item.json.body.jira.id }}\n\ud83d\udd17 <{{ $('Webhook').item.json.body.jira.ticket_link }}|View Issue in Jira>",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        656,
+        80
+      ],
+      "id": "3dbffa04-f9da-46f1-bbc5-25cf2948a265",
+      "name": "Send a message1",
+      "webhookId": "3f594612-4a19-472f-9ca4-8e3d927077d0",
+      "credentials": {
+        "slackApi": {
+          "id": "s5NFUiNlMCu0roEW",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "project": {
+          "__rl": true,
+          "value": "10001",
+          "mode": "list",
+          "cachedResultName": "DEMO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10006",
+          "mode": "list",
+          "cachedResultName": "Bug"
+        },
+        "summary": "={{ $('Webhook').item.json.body.analysis.entities.routing }}({{ $('Webhook').item.json.body.analysis.entities.issue_type }}): {{ $('Webhook').item.json.body.analysis.summary }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        880,
+        80
+      ],
+      "id": "233a1eca-2100-40bc-a11e-dfc453573b8f",
+      "name": "Create an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "email_actions",
+        "columns": "payload"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1328,
+        80
+      ],
+      "id": "65ae6762-f6db-44e3-b65e-a3db1029f07d",
+      "name": "Create or update a document1",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Shared Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "call",
+        "from": "+13465509789",
+        "to": "+918263081960",
+        "message": "=Hello {{ $json.body.alert.recipient_name }}. \n\nThis is an Urgent Escalation Alert from SoMailer.  An item regarding {{ $json.body.mail.subject }} has been flagged for immediate attention.  \n\nThe situation is: {{ $json.body.analysis.summary }}.  I repeat: A critical issue regarding {{ $json.body.analysis.entities.affected_system }} requires your action.  \n\nPlease check your dashboard or inbox immediately. Goodbye.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        432,
+        80
+      ],
+      "id": "472425db-8a2a-417b-93b8-e4ca483d9f4a",
+      "name": "Make a call",
+      "credentials": {
+        "twilioApi": {
+          "id": "X6lSTUsSnop36EA1",
+          "name": "Twilio account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "email_actions",
+        "columns": "payload"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        1328,
+        272
+      ],
+      "id": "b6bba41d-e8fd-4d7a-be4b-32d09198e7d3",
+      "name": "Create or update a document2",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "Shared Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1552,
+        80
+      ],
+      "id": "d5c63928-5110-4310-ae92-b3f50577d6d2",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{ $json.id }}",
+        "updateFields": {
+          "description": "This issue has been Resolved"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -112
+      ],
+      "id": "6f9e7cb4-53e3-4ceb-8574-1cc3c8751aae",
+      "name": "Update an issue",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "D4sTFS6nzpXlDjB1",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const link = $('Switch').first().json.body.jira.ticket_link\nconst issueId = link.split('/').pop()\n\nreturn {id: issueId};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -112
+      ],
+      "id": "2ab7bb4e-811f-4aa2-985d-8aed51ba3bb4",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  id: $('Webhook').first().json.body.card_id,\n  status: \"resolved\"\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        -112
+      ],
+      "id": "5a48982b-be65-4370-8e73-0e757233ae52",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  id: $('Webhook').first().json.body.card_id,\n  status: \"escalated\"\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        80
+      ],
+      "id": "00877815-dbaf-42d2-bf46-56d3355de730",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  id: $('Webhook').first().json.body.card_id,\n  status: \"false_positive\"\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "b0b1c709-59dc-4cc5-aeb6-9c46bca1e947",
+      "name": "Code in JavaScript3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Make a call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Create an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an issue": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make a call": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a document2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a document1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a document": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update an issue": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Update an issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create or update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Create or update a document1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Create or update a document2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b478bcdd-c663-4d99-8a97-c61796326df1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43110500a7b05a4d16a8157c32923cf4c458720f34470017eed8086f1077dc6b"
+  },
+  "id": "pe9bBCrqt7AGpV0M",
+  "tags": []
+}

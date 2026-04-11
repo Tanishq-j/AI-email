@@ -1,0 +1,118 @@
+{
+  "name": "Migration Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d9dd0c08-c5e5-4d6e-9ee0-7a26c3d069bb",
+      "name": "When clicking \"Test Workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 50,
+        "filters": {
+          "q": "is:inbox"
+        }
+      },
+      "id": "8f73091c-296b-4e69-baaa-323ca0c1a05c",
+      "name": "Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        200,
+        0
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "1",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Clean headers to get simple sender, subject, content\nconst items = $input.all();\nreturn items.map(item => {\n    let raw = item.json;\n    return {\n        json: {\n            sender_email: raw.from || raw.sender || 'unknown@example.com',\n            subject: raw.subject || 'No Subject',\n            content: raw.snippet || raw.textAsHtml || raw.textPlain || ''\n        }\n    }\n});\n"
+      },
+      "id": "8ed29be5-a12d-4849-b99c-1b416e32f9d1",
+      "name": "Clean Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/process-email",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sender_email",
+              "value": "={{$json.sender_email}}"
+            },
+            {
+              "name": "subject",
+              "value": "={{$json.subject}}"
+            },
+            {
+              "name": "content",
+              "value": "={{$json.content}}"
+            }
+          ]
+        }
+      },
+      "id": "08b99da8-f095-45de-b5cf-dfa1c9f55a95",
+      "name": "FastAPI Gateway",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        600,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking \"Test Workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "main": [
+        [
+          {
+            "node": "Clean Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Data": {
+      "main": [
+        [
+          {
+            "node": "FastAPI Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
