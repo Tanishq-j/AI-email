@@ -23,7 +23,7 @@
         192
       ],
       "id": "b182c775-0f33-4ac8-8d85-9fffcc0e7625",
-      "name": "Gmail Trigger",
+      "name": "Gmail Trigger1",
       "credentials": {
         "gmailOAuth2": {
           "id": "tkqRW2XjpfGRoeEd",
@@ -50,7 +50,7 @@
         "fallbackOutput": 2
       },
       "id": "7366af70-3fcc-4d37-8121-e52df619973b",
-      "name": "Intelligent Filter",
+      "name": "Intelligent Filter1",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 2,
       "position": [
@@ -74,11 +74,11 @@
         "options": {}
       },
       "id": "d2a8f84f-b037-4d8a-ac55-bb4815067381",
-      "name": "Trigger Urgent Fire",
+      "name": "Trigger Urgent Fire1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        0,
+        200,
         0
       ]
     },
@@ -90,12 +90,12 @@
         "options": {}
       },
       "id": "2ee08527-d3d0-4b8c-8418-799c86692d64",
-      "name": "Save Blacklist",
+      "name": "Save Blacklist1",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        0,
-        192
+        200,
+        200
       ],
       "credentials": {
         "postgres": {
@@ -111,11 +111,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16,
-        400
+        200,
+        450
       ],
       "id": "4992a5ef-3e26-403a-b37f-67a279fd9321",
-      "name": "Code in JavaScript"
+      "name": "Code in JavaScript1",
+      "notesInFlow": true
     },
     {
       "parameters": {
@@ -129,13 +130,43 @@
         }
       },
       "id": "cb9f3dba-517b-46b7-80e2-cfd56594a894",
-      "name": "Has Attachments?",
+      "name": "Has Attachments?1",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        336,
-        288
+        500,
+        450
       ]
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "text": "Summarize the key information and any action items found in this attachment. Provide the summary in 2-3 concise sentences for a management dashboard.",
+        "inputType": "binary",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        350
+      ],
+      "id": "ccbba203-3a46-47c8-8ea0-d42c251daa2d",
+      "name": "Analyze document1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VR07vQM1DybOfh2l",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     },
     {
       "parameters": {
@@ -158,124 +189,94 @@
             },
             {
               "name": "attachment_analysis",
-              "value": "={{ $node[\"Analyze document\"]?.json?.output || 'No attachment' }}"
+              "value": "={{ $node[\"Analyze document1\"]?.json?.output || 'No attachment' }}"
             }
           ]
         },
         "options": {}
       },
-      "id": "840b14be-a78d-4f0b-94bc-3557ddc1f908",
-      "name": "FastAPI Gateway",
+      "id": "840b14be-a78d-4f0b-94bc-3557ddc1f108",
+      "name": "FastAPI Gateway1",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
       "position": [
-        672,
-        384
+        1100,
+        450
       ]
-    },
-    {
-      "parameters": {
-        "resource": "document",
-        "operation": "analyze",
-        "modelId": {
-          "__rl": true,
-          "value": "models/gemini-2.0-flash",
-          "mode": "list",
-          "cachedResultName": "models/gemini-2.0-flash"
-        },
-        "text": "Summarize the key information and any action items found in this attachment. Provide the summary in 2-3 concise sentences for a management dashboard.",
-        "inputType": "binary",
-        "binaryPropertyName": "attachment_0",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.googleGemini",
-      "typeVersion": 1.1,
-      "position": [
-        672,
-        224
-      ],
-      "id": "ccbba203-3a46-47c8-8ea0-d42c251daa2d",
-      "name": "Analyze document",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "VR07vQM1DybOfh2l",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
     }
   ],
   "pinData": {},
   "connections": {
-    "Gmail Trigger": {
+    "Gmail Trigger1": {
       "main": [
         [
           {
-            "node": "Intelligent Filter",
+            "node": "Intelligent Filter1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Intelligent Filter": {
+    "Intelligent Filter1": {
       "main": [
         [
           {
-            "node": "Trigger Urgent Fire",
+            "node": "Trigger Urgent Fire1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Save Blacklist",
+            "node": "Save Blacklist1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Code in JavaScript",
+            "node": "Code in JavaScript1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code in JavaScript": {
+    "Code in JavaScript1": {
       "main": [
         [
           {
-            "node": "Has Attachments?",
+            "node": "Has Attachments?1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Has Attachments?": {
+    "Has Attachments?1": {
       "main": [
         [
           {
-            "node": "Analyze document",
+            "node": "Analyze document1",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "FastAPI Gateway",
+            "node": "FastAPI Gateway1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Analyze document": {
+    "Analyze document1": {
       "main": [
         [
           {
-            "node": "FastAPI Gateway",
+            "node": "FastAPI Gateway1",
             "type": "main",
             "index": 0
           }
@@ -288,7 +289,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "5dc19687-24aa-4db2-87fe-90dca78dcd97",
+  "versionId": "f0643ea1-54aa-49c0-9f2d-b18a38c29e1c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8fed0a8d6c2a54f94de28c9ef58c5b89a59fc5e2c0ab498a8df1d24372114ead"

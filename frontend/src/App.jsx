@@ -1,52 +1,122 @@
-import './index.css'
+import React, { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import axios from 'axios';
+import { Search, Bell } from 'lucide-react';
 
-function App() {
+import { ThemeProvider } from './components/ThemeContext';
+import Sidebar       from './components/Sidebar';
+import CommandCenter from './components/CommandCenter';
+import IntelligenceFeed from './components/IntelligenceFeed';
+import AssistantWidget  from './components/AssistantWidget';
+
+/* ── Live status badge ─────────────────────────────────── */
+function SystemStatus() {
+  const [online, setOnline] = useState(null);
+
+  const ping = async () => {
+    try {
+      await axios.get('http://127.0.0.1:8000/process-email', { timeout: 2000 });
+      setOnline(true);
+    } catch {
+      setOnline(false);
+    }
+  };
+
+  useEffect(() => {
+    ping();
+    const id = setInterval(ping, 8000);
+    return () => clearInterval(id);
+  }, []);
+
+  if (online === null) return null;
+  const cls = online ? 'online' : 'offline';
+
   return (
-    <div className="flex h-screen w-full bg-white text-gray-900 font-sans">
-      {/* Sidebar - fixed width 240px, solid background, simple border-right */}
-      <aside className="w-[240px] flex-shrink-0 bg-gray-50 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-base font-medium">Smart Email Assistant</h1>
-        </div>
-        <nav className="p-4 flex flex-col gap-1">
-          <a href="#" className="px-3 py-1.5 text-sm rounded bg-gray-200 font-medium">
-            Inbox
-          </a>
-          <a href="#" className="px-3 py-1.5 text-sm rounded hover:bg-gray-100">
-            Priority Projects
-          </a>
-          <a href="#" className="px-3 py-1.5 text-sm rounded hover:bg-gray-100">
-            Settings
-          </a>
-        </nav>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Header - solid background, simple text */}
-        <header className="h-14 border-b border-gray-200 bg-white flex items-center px-6">
-          <h2 className="text-lg font-medium">Inbox</h2>
-        </header>
-
-        {/* Content Section - standard padding, normal containers */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="max-w-4xl">
-            <h3 className="text-xl font-medium mb-4">Priority Communications</h3>
-            <div className="border border-gray-200 rounded divide-y divide-gray-200">
-              <div className="p-4 flex flex-col gap-1">
-                <span className="text-sm font-medium">CEO Office</span>
-                <span className="text-sm text-gray-500">Urgent: Q3 Roadmap Update required by EOD</span>
-              </div>
-              <div className="p-4 flex flex-col gap-1">
-                <span className="text-sm font-medium">Project Alpha Team</span>
-                <span className="text-sm text-gray-500">Status report on cloud migration</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+    <div className={`status-badge ${cls}`}>
+      <div className={`status-dot ${cls}`} />
+      {online ? 'Backend Connected' : 'Backend Offline'}
     </div>
-  )
+  );
 }
 
-export default App
+/* ── Placeholder page ──────────────────────────────────── */
+const Placeholder = ({ title }) => (
+  <motion.div
+    initial={{ opacity:0, y:8 }}
+    animate={{ opacity:1, y:0 }}
+    style={{ padding:'32px 26px' }}
+  >
+    <div style={{ fontSize:15, fontWeight:700 }}>{title}</div>
+    <div style={{ color:'var(--text-3)', marginTop:6, fontSize:13 }}>
+      Phase 3 module — integration pending.
+    </div>
+  </motion.div>
+);
+
+/* ── App shell ─────────────────────────────────────────── */
+function Shell() {
+  const [tab, setTab]        = useState('command');
+  const [search, setSearch]  = useState('');
+
+  return (
+    <div className="layout">
+      <Sidebar active={tab} onNav={setTab} />
+
+      <div className="main">
+        {/* Topbar */}
+        <div className="topbar">
+          <div className="search-wrap">
+            <Search size={13} color="var(--text-3)" className="search-icon" />
+            <input
+              className="search-input"
+              placeholder='Search emails, classifications…'
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:12 }}>
+            <SystemStatus />
+            <button style={{ border:'none', background:'none', cursor:'pointer', color:'var(--text-3)', display:'flex' }}>
+              <Bell size={17} strokeWidth={1.8} />
+            </button>
+            <div style={{
+              width:30, height:30, borderRadius:'50%',
+              background:'var(--primary)',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              color:'white', fontSize:12, fontWeight:700,
+            }}>T</div>
+          </div>
+        </div>
+
+        {/* Page */}
+        <div className="page-body">
+          <AnimatePresence mode="wait">
+            <div key={tab}>
+              {tab === 'command' && (
+                <>
+                  <CommandCenter />
+                  <IntelligenceFeed />
+                </>
+              )}
+              {tab === 'inbox'     && <IntelligenceFeed />}
+              {tab === 'analytics' && <Placeholder title="Analytics" />}
+              {tab === 'archive'   && <Placeholder title="Vision Archive" />}
+              {tab === 'settings'  && <Placeholder title="Settings" />}
+            </div>
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <AssistantWidget />
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <Shell />
+    </ThemeProvider>
+  );
+}
