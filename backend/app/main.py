@@ -83,10 +83,11 @@ def process_email_endpoint(email: EmailInput, background_tasks: BackgroundTasks)
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
         
-        # Merge email input with the brain's classification
+        # Merge email input with the brain's intelligence
         dashboard_data = email.model_dump()
-        dashboard_data['classification'] = result.get('classification', 'FYI_Read')
+        dashboard_data['classification'] = result.get('category', 'FYI_Read')
         dashboard_data['urgency_score'] = result.get('urgency_score', 0)
+        dashboard_data['short_summary'] = result.get('short_summary', '')
         
         import json
         cursor.execute(
@@ -139,7 +140,7 @@ def get_processed_emails():
 
 # ── AI ASSISTANT CONFIG ───────────────────────────────────
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.schema import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 class UserProfile(BaseModel):
     name: str
@@ -192,7 +193,7 @@ async def chat_assistant(req: ChatRequest):
     AI Assistant Endpoint: Processes user queries using Gemini 2.0 Flash
     with knowledge of the LIVE user profile and recent email history.
     """
-    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.7)
+    llm = ChatGoogleGenerativeAI(model="gemini-flash-latest", temperature=0.7)
     
     # 1. Fetch live user profile
     profile = await get_user_profile()

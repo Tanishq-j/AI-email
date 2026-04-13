@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API = 'http://127.0.0.1:8000/process-email';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API = `${BASE_URL}/process-email`;
 const POLL_INTERVAL = 5000;
 
 export function useEmails() {

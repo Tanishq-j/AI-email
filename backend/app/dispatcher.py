@@ -7,17 +7,26 @@ N8N_WEBHOOK_URL = os.environ.get("N8N_WEBHOOK_URL", "http://localhost:5678/webho
 def dispatch_command(command_package: dict):
     """
     Reads the command_package and sends the payload to the correct n8n Webhook URL.
+    Logic: Category-Aware Routing.
     """
-    print(f"--- Dispatcher Activated ---")
-    print(f"Target URL: {N8N_WEBHOOK_URL}")
-    print(f"Payload: {command_package}")
+    category = command_package.get("classification") # Graph state classification/category
+    # Fallback to general if not specified
+    target_url = os.environ.get("N8N_WEBHOOK_URL", "http://localhost:5678/webhook/general")
+
+    if category == "Urgent_Fire":
+        target_url = os.environ.get("N8N_URGENT_WEBHOOK", target_url)
+    elif category == "Scheduling":
+        target_url = os.environ.get("N8N_SCHEDULING_WEBHOOK", target_url)
+
+    print(f"--- Dispatcher Activated (Category: {category}) ---")
+    print(f"Target URL: {target_url}")
     
     try:
-        response = requests.post(N8N_WEBHOOK_URL, json=command_package, timeout=3)
+        response = requests.post(target_url, json=command_package, timeout=3)
         print(f"n8n responded with status code: {response.status_code}")
         return response.status_code
     except requests.exceptions.RequestException as e:
-        print(f"n8n Request failed (n8n is likely offline or mocked URL used): {e}")
+        print(f"n8n Request failed: {e}")
         return None
 
 if __name__ == "__main__":

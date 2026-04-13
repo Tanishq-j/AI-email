@@ -34,7 +34,10 @@ const Dashboard = () => {
   const getClassificationStyles = (type) => {
     switch (type) {
       case 'Urgent_Fire': return 'neon-urgent';
+      case 'Scheduling': return 'neon-scheduling';
+      case 'Action_Required': return 'neon-action';
       case 'FYI_Read': return 'neon-fyi';
+      case 'Cold_Outreach': return 'neon-cold';
       default: return 'border-transparent border-l-2';
     }
   };
@@ -42,7 +45,10 @@ const Dashboard = () => {
   const getLabelColor = (type) => {
     switch (type) {
       case 'Urgent_Fire': return 'text-brand-accent bg-brand-accent/10';
+      case 'Scheduling': return 'text-purple-400 bg-purple-400/10';
+      case 'Action_Required': return 'text-yellow-400 bg-yellow-400/10';
       case 'FYI_Read': return 'text-brand-primary bg-brand-primary/10';
+      case 'Cold_Outreach': return 'text-gray-500 bg-gray-500/10';
       default: return 'text-gray-400 bg-gray-400/10';
     }
   };
