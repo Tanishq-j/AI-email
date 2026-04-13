@@ -13,7 +13,7 @@ export function useEmails() {
   const fetchEmails = useCallback(async (isInitial = false) => {
     if (isInitial) setLoading(true);
     try {
-      const response = await axios.get(API, { timeout: 3000 });
+      const response = await axios.get(API, { timeout: 10000 });
       const data = response.data?.emails || [];
       
       // Update state: filter out duplicates if any, or just set if incoming is full list

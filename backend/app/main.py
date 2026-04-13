@@ -249,6 +249,12 @@ Guidelines:
 
     try:
         response = llm.invoke(messages)
-        return {"text": response.content}
+        content = response.content
+        if isinstance(content, list):
+            text_parts = [part.get("text", "") if isinstance(part, dict) else str(part) for part in content]
+            text = "".join(text_parts).strip()
+        else:
+            text = str(content).strip()
+        return {"text": text}
     except Exception as e:
         return {"text": f"I'm sorry, I encountered an error: {str(e)}"}
