@@ -112,7 +112,7 @@ export default function Analytics() {
             <h2 className="font-bold text-lg">Relationship Heatmap</h2>
           </div>
           <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart data={analyticsData.topSenders} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis 
@@ -151,7 +151,7 @@ export default function Analytics() {
             <h2 className="font-bold text-lg">Signals Breakdown</h2>
           </div>
           <div className="h-[300px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={analyticsData.classificationMix}

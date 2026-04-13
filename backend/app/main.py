@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import os
+import json
 
 from app.graph import graph_app
 from app.agent_state import GraphState
