@@ -1,9 +1,9 @@
-# 🌌 SoMailer Intelligence Hub  
+# 🌌 Mailio Intelligence Hub  
 *The Open-Source, Agentic AI Email Management Ecosystem*
 
-![SoMailer Banner](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge) ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/Postgres-PgVector-336791?style=for-the-badge&logo=postgresql&logoColor=white) 
+![Mailio Banner](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge) ![Python](https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white) ![React](https://img.shields.io/badge/React-Vite-61DAFB?style=for-the-badge&logo=react&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-Containers-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/Postgres-PgVector-336791?style=for-the-badge&logo=postgresql&logoColor=white) 
 
-SoMailer is a locally-hosted, highly-advanced, multi-agent AI Email Assistant. It transcends basic auto-responders by establishing an end-to-end event-driven loop capable of classifying incoming signals, executing intelligent RAG operations over company constraints, drafting personalized replies, and automatically pinging secondary platforms (Google Calendar, Slack, Twilio) upon detecting urgent communications or meeting requests.
+Mailio is a locally-hosted, highly-advanced, multi-agent AI Email Assistant. It transcends basic auto-responders by establishing an end-to-end event-driven loop capable of classifying incoming signals, executing intelligent RAG operations over company constraints, drafting personalized replies, and automatically pinging secondary platforms (Google Calendar, Slack, Twilio) upon detecting urgent communications or meeting requests.
 
 ---
 
