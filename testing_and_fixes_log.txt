@@ -1,0 +1,15 @@
+# SoMailer E2E Testing & Fixes Log
+Date: 2026-04-15
+
+## 1. Initial Assessment
+- Started E2E testing phase using `Tester` script.
+- Verified presence of Groq and Gemini keys.
+- Logging started.
+
+## 2. E2E Simulation & Verification (2026-04-15)
+- Automatically executed 'tester_auto.js' out of e:\Tester.
+- Successfully fed varying mock identities (Global Logistics, Skyward Aviation) representing Actionable Scenarios into the IMAP pipeline.
+- Verified AI Groq LLM parsed context utilizing Chain-of-Thought (CoT).
+- Verified the case-agnostic safety in Migration Workflow ('from'/'From' header parsing) preventing 'unknown sender' drops.
+- Frontend React Dashboard renders relationship analytics efficiently and successfully displays updated visual cards.
+
