@@ -1,0 +1,38 @@
+# SoMailer Diagnostics & Testing Directory
+
+This folder isolates all unit, integration, and logic test scripts from the primary frontend and backend architecture. These scripts were utilized during architectural audits, data pipeline routing, and LangGraph testing.
+
+### Directory Inventory
+
+1. `test_action_flows.py`
+   Used to stress-test the `dispatcher.py` module by creating complete, mock JSON objects mimicking n8n. Tests specifically the `Urgent_Fire` and `Scheduling` event handlers.
+
+2. `tester_patch.js`
+   A raw JS payload patch used for frontend object iteration testing or Node environment tests (originally utilized alongside UI data binding mocks).
+
+3. `atomic_test.py`
+   Evaluates single-step (atomic) Python pipeline executions natively before introducing them into the primary LangGraph flow.
+
+4. `discovery_test.py`
+   Script used to query the Postgres relational database and identify existing table columns/rows (e.g. retrieving `draft_message.id`) safely.
+
+5. `test_chat.py`
+   Executes mock inference payloads against the Groq/LLaMA endpoint to ensure Langchain context windows and history objects aren't exceeding native token limits.
+
+6. `test_connections.py`
+   A comprehensive infrastructure ping script. It verifies PostgreSQL reaches DB, Redis spins properly, n8n webhook paths return 200, and Gemini models output properly.
+
+7. `test_endpoint.py`
+   Utilized locally via the `requests` library to simulate API `POST` and `GET` requests against the FastAPI active ports (`http://localhost:8000/...`).
+
+8. `test_gemini.py`
+   A simple script utilized to execute bare-metal Google Gemini Python SDK verifications specifically for `vision_parser.py` requirements.
+
+9. `test_rag.py`
+   The full End-to-End Retriever Agent Test. Triggers a live DAG execution of the Intelligence system to natively capture Cosine Semantic Retrieval scores out of `pgvector` utilizing the new CPU `SentenceTransformers` integration.
+
+10. `simulate_email.py`
+   Injects heavy dummy emails (both FYI, Action Required, etc) directly into the processing pipeline organically.
+
+11. `simulate_vision.py`
+   Bypasses text payloads by constructing a fake image/screenshot data dump to measure the multimodal parsing output behavior of the `classifier_agent`.

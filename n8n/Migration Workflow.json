@@ -51,7 +51,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:8000/process-email",
+        "url": "http://host.docker.internal:8000/process-email",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [

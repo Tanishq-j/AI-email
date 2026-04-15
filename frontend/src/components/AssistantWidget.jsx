@@ -7,7 +7,8 @@ const CHIPS = ['Draft a professional reply', 'Identify urgent tasks', 'Analyze V
 
 const SPRING_CONFIG = { type: 'spring', stiffness: 300, damping: 30 };
 
-const API = 'http://127.0.0.1:8000/chat-assistant';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API = `${BASE_URL}/chat-assistant`;
 
 export default function AssistantWidget({ pageContext = 'Home' }) {
   const [open, setOpen] = useState(false);
