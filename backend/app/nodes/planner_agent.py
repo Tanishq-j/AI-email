@@ -14,7 +14,7 @@ def process_planner(state: GraphState) -> Dict[str, Any]:
     short_summary = state.get("short_summary", "Email received.")
     email_data = state.get("email_data", {})
     
-    groq_api_key = "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"
+    groq_api_key = os.environ.get("GROQ_API_KEY", "your_api_key_here")
     
     prompt = f"""You are the SoMailer Agentic Brain. 
 Generate a command package for n8n automation based on the following email intelligence.
