@@ -59,7 +59,7 @@ const Navbar = () => {
                             e.target.onerror = null;
                             e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233A8F4A'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z'/%3E%3C/svg%3E"
                         }} />
-                        <span className="font-bold text-xl text-neutral-900 tracking-tight">SoMail</span>
+                        <span className="font-bold text-xl text-neutral-900 tracking-tight">Maileo</span>
                     </div>
 
                     <div className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-600">
@@ -96,7 +96,7 @@ const Footer = () => {
             <div className="md:w-[80%] w-full mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-3">
                     <img src="/logo.png" alt="" className="h-6 w-auto" onError={(e) => e.target.style.display='none'} />
-                    <span className="text-neutral-900 font-bold text-xl tracking-tight">SoMail</span>
+                    <span className="text-neutral-900 font-bold text-xl tracking-tight">Maileo</span>
                 </div>
                 <div className="flex gap-8 md:text-[14px] text-[13px] font-medium">
                     <a href="#" className="hover:text-[#3A8F4A] transition-colors">Product</a>
@@ -105,7 +105,7 @@ const Footer = () => {
                     <a href="#" className="hover:text-[#3A8F4A] transition-colors">Contact Us</a>
                 </div>
                 <div className="md:text-[14px] text-[13px]">
-                    <p>&copy; {new Date().getFullYear()} SoMail. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Maileo. All rights reserved.</p>
                 </div>
             </div>
         </footer>
@@ -144,12 +144,12 @@ const AutomatedEmailHome = () => {
                     </div>
                     
                     <h1 className="text-5xl md:text-7xl lg:text-[80px] leading-tight font-bold tracking-tight text-neutral-900">
-                        Don't just apply.<br /> 
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-[#3A8F4A]">Get SoHired.</span>
+                        Don't just reply.<br /> 
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-[#3A8F4A]">Automate it.</span>
                     </h1>
                     
                     <p className="text-lg md:text-xl text-neutral-600 max-w-2xl">
-                        SoMail is your instant assistant that learns your writing voice, scores urgency, and automates your entire inbox without you having to explain a thing. Select a plan below to start supercharging your workflow.
+                        Maileo is your instant assistant that learns your writing voice, scores urgency, and automates your entire inbox without you having to explain a thing. Select a plan below to start supercharging your workflow.
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4 mt-6">
@@ -184,13 +184,13 @@ const AutomatedEmailHome = () => {
                                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
                             </div>
                             <div className="mx-auto px-4 py-1.5 bg-white border border-neutral-200 rounded-md text-xs font-medium text-neutral-500 shadow-sm">
-                                somail.ai/inbox
+                                Maileo.ai/inbox
                             </div>
                         </div>
                         
                         <div className="flex-1 w-full h-full">
                             <img
-                                src="/Dino.PNG"
+                                src="/Mail.png"
                                 alt="Dashboard Interface"
                                 height={720}
                                 width={1400}
@@ -219,7 +219,7 @@ const AutomatedEmailHome = () => {
                             </span>
                         </div>
                         <p className="text-xl md:text-2xl font-medium leading-[1.4] mt-6">
-                            SoMail stops using "dumb" keyword filters and starts using brain-like reasoning. Every email gets a Priority Score (0.0–1.0) based on how critical it actually is. It spots a "Emergency" vs. a "Newsletter" with 98% accuracy, automatically sending high-priority alerts to Slack or Jira before you even open your phone.
+                            Maileo stops using "dumb" keyword filters and starts using brain-like reasoning. Every email gets a Priority Score (0.0–1.0) based on how critical it actually is. It spots a "Emergency" vs. a "Newsletter", automatically sending high-priority alerts to Slack or Jira before you even open your phone.
                         </p>
                     </div>
 
@@ -287,7 +287,7 @@ const AutomatedEmailHome = () => {
                         Pricing & Business(ROI)
                     </h2>
                     <p className="text-[17px] md:text-[19px] font-semibold text-center mt-3 max-w-2xl text-neutral-600">
-                        If SoMail saves a senior manager just <span className="text-[#3A8F4A]">1 hour per week</span>, the <br className="hidden md:block" />
+                        If Maileo saves a senior manager just <span className="text-[#3A8F4A]">1 hour per week</span>, the <br className="hidden md:block" />
                         <span className="text-[#3A8F4A]">ROI is 1,200%</span> based on average executive hourly rates.
                     </p>
 
