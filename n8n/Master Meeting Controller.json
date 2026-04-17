@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        4176,
-        2688
+        3568,
+        2752
       ],
-      "id": "7ba08f0c-6796-4419-9377-68802ea62842",
+      "id": "e30a2646-f8e9-45ee-a99d-3bb764bdc8ee",
       "name": "Respond to Webhook"
     },
     {
@@ -28,10 +28,6 @@
             {
               "name": "content",
               "value": "={{ $json.draft.content }}"
-            },
-            {
-              "name": "recipient",
-              "value": "={{ $json.draft.recipient }}"
             },
             {
               "name": "subject",
@@ -60,10 +56,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        3968,
-        2688
+        3360,
+        2752
       ],
-      "id": "e4dd80a1-f5a6-4b4e-897c-766329fefc89",
+      "id": "b93ede54-1b71-4abe-83ee-79d42f00647c",
       "name": "Save Draft"
     },
     {
@@ -73,35 +69,117 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3520,
-        3136
+        2912,
+        3200
       ],
-      "id": "ae0f41ca-a78d-48f6-94e4-8d8f4ab9bb25",
+      "id": "7667c97b-4cb2-474e-8e14-7c2006442ae0",
       "name": "Gen Cancel Draft"
     },
     {
       "parameters": {
+        "operation": "update",
         "schema": "public",
         "table": "email_actions",
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
             "scheduling_status": "Cancelled",
-            "google_event_id": ""
+            "id": "={{ $node[\"Webhook\"].json.body.email_action_id }}"
           },
           "matchingColumns": [
             "id"
-          ]
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload",
+              "displayName": "payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email_received_at",
+              "displayName": "email_received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "scheduling_status",
+              "displayName": "scheduling_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "scheduled_time",
+              "displayName": "scheduled_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "external_event_id",
+              "displayName": "external_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "google_event_id",
+              "displayName": "google_event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
         },
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        3328,
-        3136
+        2720,
+        3200
       ],
-      "id": "a1e1d541-1cef-4a5a-b4e5-a63cd05565ab",
+      "id": "a0ba830e-ea6c-48d0-a089-0eb9d07ea1ac",
       "name": "Mark Cancelled",
       "credentials": {
         "postgres": {
@@ -165,10 +243,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
       "position": [
-        3072,
-        2992
+        2464,
+        3056
       ],
-      "id": "26c88661-a35c-4d8c-8e80-e464f4878420",
+      "id": "36bf357a-4201-49bc-97d0-98f7addea0dd",
       "name": "Resch/Canc Switch"
     },
     {
@@ -185,17 +263,18 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        2880,
-        2992
+        2272,
+        3056
       ],
-      "id": "7257e7bb-e40a-41ff-b7be-66957982e79e",
+      "id": "38cffdea-209b-40a4-93e2-fa81b2b63d0f",
       "name": "Delete Calendar Event",
       "credentials": {
         "googleCalendarOAuth2Api": {
           "id": "86S7RvqQKlVN61Jw",
           "name": "Google Calendar account"
         }
-      }
+      },
+      "continueOnFail": true
     },
     {
       "parameters": {
@@ -216,10 +295,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        2672,
-        2992
+        2064,
+        3056
       ],
-      "id": "dbc7fd01-bc26-4a91-8eb7-f93fb1376c12",
+      "id": "4caa27a0-03a9-45eb-8303-fe321142d6ab",
       "name": "Fetch Google Event ID",
       "credentials": {
         "postgres": {
@@ -235,16 +314,16 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3728,
-        2688
+        3120,
+        2752
       ],
-      "id": "d7643fae-fc15-4212-b0eb-f3b2debe10b6",
+      "id": "57cbbefa-b08a-4347-aae1-46b96211c8f6",
       "name": "Gen Confirm Draft"
     },
     {
       "parameters": {
         "method": "PATCH",
-        "url": "=http://host.docker.internal:8000/email-actions/{{ $json.body.email_action_id }}/confirm",
+        "url": "=http://host.docker.internal:8000/email-actions/{{ $node[\"Webhook\"].json.body.email_action_id }}/confirm",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -254,7 +333,7 @@
             },
             {
               "name": "scheduled_time",
-              "value": "={{ $node[\"Webhook\"].json.body.start_time }}"
+              "value": "={{ $json.start.dateTime }}"
             }
           ]
         },
@@ -263,10 +342,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        3520,
-        2688
+        2912,
+        2752
       ],
-      "id": "e082e176-7514-4e53-a865-188759cebb36",
+      "id": "71eefc7b-e1db-4115-a9ec-905f086284dc",
       "name": "Confirm Backend"
     },
     {
@@ -288,10 +367,10 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        3328,
-        2688
+        2720,
+        2752
       ],
-      "id": "8d3d5330-c697-4207-bff8-3c4a0135af31",
+      "id": "cb878585-21d7-4395-870c-484260732a12",
       "name": "Create Google Event",
       "credentials": {
         "googleCalendarOAuth2Api": {
@@ -302,15 +381,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// This version handles the \"Always Output Data\" empty case correctly\nconst rawInput = $input.all();\nconst events = rawInput.filter(e => e.json.start);\nconst body = $('Webhook').item.json.body || {};\nconst profile = $('Get User Profile').item.json || { signature: \"\" };\nconst senderName = body.mail?.sender_name || 'there';\n\n// Professional Slot Hunting Logic\nconst START_HOUR = 9; const END_HOUR = 18; const istOffset = 5.5;\n\nfunction isBusy(start, end) {\n  return events.some(e => {\n    const eStart = new Date(e.json.start.dateTime || e.json.start.date);\n    const eEnd = new Date(e.json.end.dateTime || e.json.end.date);\n    return (start < eEnd && end > eStart);\n  });\n}\n\nconst availableSlots = []; const now = new Date();\nfor (let d = 0; d < 3; d++) {\n  const day = new Date(now); day.setDate(now.getDate() + d);\n  day.setUTCHours(Math.floor(START_HOUR - istOffset), 30, 0, 0);\n  for (let h = 0; h < (END_HOUR - START_HOUR) * 2; h++) {\n    const slotStart = new Date(day); slotStart.setMinutes(day.getMinutes() + (h * 30));\n    const slotEnd = new Date(slotStart); slotEnd.setMinutes(slotStart.getMinutes() + 30);\n    if (slotStart > now && !isBusy(slotStart, slotEnd)) {\n      availableSlots.push(slotStart); if (availableSlots.length >= 5) break;\n    }\n  }\n  if (availableSlots.length >= 5) break;\n}\n\nconst slotStrings = availableSlots.map(s => s.toLocaleString('en-IN', { \n  weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' \n}));\n\n// RALPH LOOP: Export raw ISOs for frontend buttons\nconst slots_raw = availableSlots.map(s => s.toISOString());\n\nconst suggestedDraft = `Hi ${senderName},\\n\\nI've reviewed my calendar and I have the following availability (IST):\\n\\n[DYNAMIC_SLOTS_HERE]\\n\\nDo any of these times work for a call?\\n\\n${profile.signature}`;\n\nreturn {\n  draft: {\n    email_action_id: body.email_action_id,\n    content: suggestedDraft,\n    recipient: body.mail?.sender_mail,\n    subject: `Re: ${body.mail?.subject || 'Meeting Request'}`,\n    type: \"Scheduling Proposal\",\n    reasoning: \"Autonomous slot hunting completed.\",\n    tags: [\"Scheduling\", \"Auto-Probe\"],\n    suggested_slots: slots_raw\n  }\n};\n"
+        "jsCode": "// This version handles the \"Always Output Data\" empty case correctly\nconst rawInput = $input.all();\nconst events = rawInput.filter(e => e.json.start);\nconst body = $('Webhook').item.json.body || {};\nconst profile = $('Get User Profile').item.json || { signature: \"\" };\nconst senderName = body.mail?.sender_name || 'there';\n\n// Professional Slot Hunting Logic\nconst START_HOUR = 9; const END_HOUR = 18; const istOffset = 5.5;\n\nfunction isBusy(start, end) {\n  return events.some(e => {\n    const eStart = new Date(e.json.start.dateTime || e.json.start.date);\n    const eEnd = new Date(e.json.end.dateTime || e.json.end.date);\n    return (start < eEnd && end > eStart);\n  });\n}\n\nconst availableSlots = []; const now = body.start_time ? new Date(body.start_time) : new Date(); \nfor (let d = 0; d < 3; d++) {\n  const day = new Date(now); day.setDate(now.getDate() + d);\n  day.setUTCHours(Math.floor(START_HOUR - istOffset), 30, 0, 0);\n  for (let h = 0; h < (END_HOUR - START_HOUR) * 2; h++) {\n    const slotStart = new Date(day); slotStart.setMinutes(day.getMinutes() + (h * 30));\n    const slotEnd = new Date(slotStart); slotEnd.setMinutes(slotStart.getMinutes() + 30);\n    if (slotStart > now && !isBusy(slotStart, slotEnd)) {\n      availableSlots.push(slotStart); if (availableSlots.length >= 5) break;\n    }\n  }\n  if (availableSlots.length >= 5) break;\n}\n\nconst slotStrings = availableSlots.map(s => s.toLocaleString('en-IN', { \n  weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' \n}));\n\n// RALPH LOOP: Export raw ISOs for frontend buttons\nconst slots_raw = availableSlots.map(s => s.toISOString());\n\nconst suggestedDraft = `Hi ${senderName},\\n\\nI've reviewed my calendar and I have the following availability (IST):\\n\\n[DYNAMIC_SLOTS_HERE]\\n\\nDo any of these times work for a call?\\n\\n${profile.signature}`;\n\n// ... [existing data processing code above remains the same] ...\n\nconst finalRecipient = body.recipient || \n                       $node[\"Fetch Google Event ID\"].json.recipient || \n                       body.mail?.sender_mail;\nreturn {\n  draft: {\n    email_action_id: body.email_action_id,\n    content: suggestedDraft,\n    recipient: finalRecipient,\n    subject: body.subject || (body.mail?.subject ? `Re: ${body.mail.subject}` : \"Meeting Reschedule\"),\n    type: \"Scheduling Proposal\",\n    reasoning: body.action === \"reschedule\" ? \"Auto-probe for requested reschedule.\" : \"Autonomous slot hunting completed.\",\n    tags: [\"Scheduling\", body.action === \"reschedule\" ? \"Reschedule-Auth\" : \"Auto-Probe\"],\n    suggested_slots: slots_raw\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3120,
-        2432
+        2576,
+        2496
       ],
-      "id": "c6fdb50e-ee66-492f-915a-2e9193cdc8cb",
+      "id": "90ef936b-f68f-4515-b1d7-20995fe4dd71",
       "name": "3-Day Probe"
     },
     {
@@ -320,10 +399,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3120,
-        2688
+        2512,
+        2752
       ],
-      "id": "ade1c95f-bdf1-4dad-845f-62c88207e8fb",
+      "id": "d3277fd1-edb0-46b3-9845-7fdff8436f43",
       "name": "Final Conflict Check"
     },
     {
@@ -339,10 +418,10 @@
       "type": "n8n-nodes-base.googleCalendar",
       "typeVersion": 1.3,
       "position": [
-        2768,
-        2432
+        2160,
+        2496
       ],
-      "id": "169967ae-b56a-48b3-8389-2f2f09a51f37",
+      "id": "8b24ab7c-b22e-4a3a-9264-2bf1971f3f97",
       "name": "Check Availability",
       "alwaysOutputData": true,
       "credentials": {
@@ -451,10 +530,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
       "position": [
-        2480,
-        2736
+        1872,
+        2800
       ],
-      "id": "e2b4b177-648e-4c38-94f3-27f6be5506b2",
+      "id": "33c070c6-c5ec-432c-8c52-9056654f781f",
       "name": "Action Switch"
     },
     {
@@ -474,10 +553,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2336,
-        2736
+        1728,
+        2800
       ],
-      "id": "ada70fa1-57d0-49c0-abd1-c29960b81fd7",
+      "id": "b0f5db75-12c6-4209-a5b5-26ead9b45bd9",
       "name": "Edit Fields"
     },
     {
@@ -491,10 +570,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.4,
       "position": [
-        2160,
-        2736
+        1552,
+        2800
       ],
-      "id": "e01a64b4-4097-4b4f-9ab6-9c8c542ee682",
+      "id": "0ceaa225-55f6-415e-8c77-37366a8ce82a",
       "name": "Get User Profile",
       "credentials": {
         "postgres": {
@@ -513,10 +592,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        1872,
-        2736
+        1264,
+        2800
       ],
-      "id": "94b7821d-e805-4112-9b12-f5d429a9870e",
+      "id": "a06ecec8-caab-422f-887d-5266254e264d",
       "name": "Webhook",
       "webhookId": "756f7317-2851-4455-bcaa-a1d5cfbfe5a3"
     },
@@ -575,10 +654,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.1,
       "position": [
-        2800,
-        2672
+        2192,
+        2736
       ],
-      "id": "eb2c77be-a011-482d-89cc-0a2b508c280c",
+      "id": "3d3cc268-c690-418e-975c-e058e39a47f7",
       "name": "Is Confirming?"
     },
     {
@@ -588,11 +667,50 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2944,
-        2816
+        2336,
+        2880
       ],
-      "id": "0aa05850-9e32-47aa-81dc-70eb5f03c0dc",
+      "id": "e2fc6012-a736-433f-86ef-d6b89dbcef0c",
       "name": "Prep Google Data"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "email_actions",
+          "mode": "list",
+          "cachedResultName": "email_actions"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "value": "={{ $('Webhook').first().json.body.email_action_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2368,
+        2512
+      ],
+      "id": "2d7f62db-87af-4866-9b30-93ab65c2bcab",
+      "name": "Get Recipient Info",
+      "credentials": {
+        "postgres": {
+          "id": "57onlUbW4pSOWEVy",
+          "name": "Postgres account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -812,7 +930,7 @@
         ],
         [
           {
-            "node": "3-Day Probe",
+            "node": "Get Recipient Info",
             "type": "main",
             "index": 0
           }
@@ -829,14 +947,25 @@
           }
         ]
       ]
+    },
+    "Get Recipient Info": {
+      "main": [
+        [
+          {
+            "node": "3-Day Probe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "5fef3ce3-9288-4550-976e-1ed06b673746",
+  "versionId": "7ba1d3ef-469e-4e9f-92d0-bd1b752a3a1e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8fed0a8d6c2a54f94de28c9ef58c5b89a59fc5e2c0ab498a8df1d24372114ead"

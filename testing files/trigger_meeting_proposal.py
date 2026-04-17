@@ -34,6 +34,7 @@ def simulate_proposal():
     payload = {
         "action": "propose_times",
         "email_action_id": valid_id,
+        "start_time": "2026-04-18T10:00:00Z",
         "mail": {
             "sender_name": "John Doe",
             "sender_mail": "johndoe@example.com",

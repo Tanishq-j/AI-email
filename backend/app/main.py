@@ -319,7 +319,7 @@ def get_scheduled_emails():
             SELECT id, payload->>'sender_email' as sender, payload->>'subject' as subject, 
             scheduling_status, scheduled_time, google_event_id 
             FROM email_actions 
-            WHERE scheduling_status != 'New'
+            WHERE scheduling_status = 'Confirmed'
             ORDER BY COALESCE(scheduled_time, '2099-01-01'::timestamp) ASC
         """)
         return {"scheduled": cursor.fetchall()}
@@ -360,6 +360,23 @@ class ConfirmUpdate(BaseModel):
     google_event_id: str
     scheduled_time: str | None = None
 
+class TimeUpdate(BaseModel):
+    scheduled_time: str
+
+@app.patch("/email-actions/{id}/set-time")
+def set_email_time(id: int, update: TimeUpdate):
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cursor = conn.cursor()
+        cursor.execute("UPDATE email_actions SET scheduled_time = %s WHERE id = %s", (update.scheduled_time, id))
+        conn.commit()
+        return {"status": "success"}
+    except Exception as e:
+        print(f"Set time error: {e}")
+        return {"status": "error", "message": str(e)}
+    finally:
+        if 'conn' in locals(): conn.close()
+
 @app.patch("/email-actions/{id}/confirm")
 def confirm_email_meeting(id: int, update: ConfirmUpdate):
     try:
@@ -369,7 +386,7 @@ def confirm_email_meeting(id: int, update: ConfirmUpdate):
             UPDATE email_actions 
             SET scheduling_status = 'Confirmed', 
                 google_event_id = %s,
-                scheduled_time = %s
+                scheduled_time = COALESCE(%s, scheduled_time)
             WHERE id = %s
         """, (update.google_event_id, update.scheduled_time, id))
         conn.commit()

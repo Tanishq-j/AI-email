@@ -49,6 +49,11 @@ export default function Drafts() {
       if (selectedTime[id] && draft.type === 'Scheduling Proposal') {
         const n8nWebhook = "http://localhost:5678/webhook/meeting-logic";
         
+        // 0. Proactively save the chosen time slot in the database
+        await axios.patch(`${API_BASE}/email-actions/${draft.email_action_id}/set-time`, {
+          scheduled_time: selectedTime[id]
+        });
+
         // 1. Trigger the n8n logic
         await axios.post(n8nWebhook, {
           email_action_id: draft.email_action_id,
@@ -57,12 +62,7 @@ export default function Drafts() {
           recipient: draft.recipient
         });
 
-        // 2. BACKUP: Direct confirmation to ensure card visibility
-        // We use a dummy Event ID if the real one hasn't arrived via n8n's callback yet
-        await axios.patch(`${API_BASE}/email-actions/${draft.email_action_id}/confirm`, {
-          google_event_id: `PENDING_SYNC_${draft.email_action_id}`,
-          scheduled_time: selectedTime[id]
-        });
+        // We rely entirely on n8n successfully updating the backend database with the real event ID.
 
         // 3. Mark the draft as executed in the database so it disappears
         await axios.post(`${API_BASE}/execute-draft/${id}`);
