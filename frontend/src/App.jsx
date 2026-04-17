@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import axios from 'axios';
 import { Search, Bell } from 'lucide-react';
 
 import { ThemeProvider } from './components/ThemeContext';
+import AutomatedEmailHome from './components/AutomatedEmailHome';
 import Sidebar       from './components/Sidebar';
 import CommandCenter from './components/CommandCenter';
 import IntelligenceFeed from './components/IntelligenceFeed';
@@ -124,7 +126,13 @@ export default function App() {
   return (
     <ThemeProvider>
       <Toaster position="top-right" />
-      <Shell />
+      <Router>
+        <Routes>
+          <Route path="/" element={<AutomatedEmailHome />} />
+          <Route path="/dashboard/*" element={<Shell />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }

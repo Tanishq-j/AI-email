@@ -4,7 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell
 } from 'recharts';
-import { Info, Search, Columns, Download } from 'lucide-react';
+import { Info, Search, Columns, Download, ArrowRight, Zap, BookOpen, Users, Cpu, ShieldAlert } from 'lucide-react';
 import { useEmails } from '../hooks/useEmails';
 
 // Inherit global semantic variables for diagrams to guarantee perfect light/dark contrast
@@ -29,49 +29,48 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 200 } }
 };
 
-const MiniBarChart = ({ color, isFilled }) => {
-  const heights = [40, 60, 30, 80, 50, 90, 40, 70, 60, 50, 80, 40, 60, 40, 70];
-  return (
-    <div className="flex items-end justify-between h-24 w-full gap-[2px] mt-2">
-      {heights.map((h, i) => (
-        <div 
-          key={i} 
-          className="w-full rounded-t-sm" 
-          style={{ 
-            height: `${h}%`, 
-            backgroundColor: isFilled ? 'white' : color,
-            opacity: isFilled ? (i % 2 === 0 ? 0.9 : 0.6) : (i % 2 === 0 ? 0.3 : 0.15) 
-          }} 
-        />
-      ))}
-    </div>
-  )
+function getCardIcon(title) {
+  const t = title.toLowerCase();
+  if (t.includes("urgency")) return ShieldAlert;
+  if (t.includes("action")) return Zap;
+  if (t.includes("read") || t.includes("fyi")) return BookOpen;
+  if (t.includes("sender")) return Users;
+  return Cpu;
 }
 
 function StatCard({ title, value, subtext, color, isFilled, trend, trendUp }) {
+  const IconComponent = getCardIcon(title);
   return (
     <div 
-      className={`p-4 rounded-xl border ${isFilled ? 'border-transparent shadow-md' : 'border-border shadow-sm bg-surface text-text'} flex flex-col h-[230px] relative overflow-hidden`} 
-      style={isFilled ? { backgroundColor: 'var(--primary)', color: 'white', boxShadow: `0 4px 14px 0 var(--primary-bg)` } : {}}
+      className={`group p-6 rounded-[24px] border ${isFilled ? 'border-transparent shadow-lg' : 'border-border shadow-sm bg-surface text-text'} flex flex-col h-[180px] relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer`} 
+      style={isFilled ? { backgroundColor: 'var(--primary)', color: 'white', boxShadow: `0 12px 32px -8px var(--primary-bg)` } : {}}
     >
-      <div className="flex justify-between items-center mb-1">
-        <span className={`text-xs font-semibold ${isFilled ? 'text-white/95' : 'text-text-2'}`}>{title}</span>
-        <Info size={14} className={isFilled ? 'text-white/70' : 'text-text-3'} />
+      <div className="flex justify-between items-start mb-auto">
+        <div className="flex flex-col gap-1">
+          <span className={`text-[11px] font-bold uppercase tracking-widest ${isFilled ? 'text-white/80' : 'text-text-3 group-hover:text-primary transition-colors'}`}>{title}</span>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-4xl font-black tracking-tight">{value}</span>
+            {trend && (
+               <span className={`text-[11px] px-2 py-1 rounded-md font-bold flex items-center ${isFilled ? 'bg-white/20 text-white' : 'bg-surface2 text-text-2'}`}>
+                 {trendUp ? '↗' : '↘'} {trend}
+               </span>
+            )}
+          </div>
+        </div>
+        <div className={`p-2 rounded-xl transition-all duration-300 ${isFilled ? 'bg-white/20 text-white group-hover:scale-110 group-hover:bg-white/30' : 'bg-surface2 text-text-3 group-hover:bg-primary group-hover:text-white group-hover:scale-110 group-hover:rotate-12'}`}>
+          <ArrowRight size={16} />
+        </div>
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-bold tracking-tight">{value}</span>
-        {trend && (
-           <span className={`text-[10px] px-1.5 py-0.5 rounded flex items-center font-bold ${isFilled ? 'bg-white/20 text-white' : 'bg-surface2 text-text-2'}`}>
-             {trendUp ? '↗' : '↘'} {trend}
-           </span>
-        )}
-      </div>
-      <div className={`text-[11px] mt-1 font-medium ${isFilled ? 'text-white/80' : 'text-text-3'}`}>
+      
+      <div className={`text-[13px] font-medium mt-4 relative z-10 ${isFilled ? 'text-white/90' : 'text-text-2'}`}>
         {value} {subtext}
       </div>
-      <div className="mt-auto">
-        <MiniBarChart color={isFilled ? '#ffffff' : color} isFilled={isFilled} />
+
+      <div className={`absolute -bottom-4 -right-4 transition-all duration-700 pointer-events-none group-hover:scale-110 group-hover:-rotate-12 ${isFilled ? 'text-white opacity-[0.08] group-hover:opacity-[0.15]' : 'text-primary opacity-[0.03] group-hover:opacity-[0.06]'}`}>
+        <IconComponent size={130} strokeWidth={1} />
       </div>
+
+      <div className={`absolute bottom-0 left-0 w-full h-1.5 bg-gradient-to-r ${isFilled ? 'from-white/0 via-white/50 to-white/0' : 'from-primary/0 via-primary/50 to-primary/0'} opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-20`} />
     </div>
   )
 }
