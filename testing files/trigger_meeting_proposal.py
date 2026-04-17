@@ -12,14 +12,16 @@ def simulate_proposal():
     # Fetch a valid email action ID from the database
     try:
         import psycopg2
+        import json
         conn = psycopg2.connect("postgresql://user:password@localhost:5432/email_intelligence")
         cur = conn.cursor()
-        cur.execute("SELECT id FROM email_actions ORDER BY id DESC LIMIT 1")
-        row = cur.fetchone()
-        if not row:
-            print("No email actions found in the database. Cannot simulate.")
-            return
-        valid_id = row[0]
+        
+        # Create a fresh mock email action to test securely
+        test_payload = json.dumps({"sender_name": "New Test Client", "sender_email": "brand_new_test@example.com", "subject": "Real-time UI Test Meeting", "action": "propose_times"})
+        cur.execute("INSERT INTO email_actions (payload, scheduling_status) VALUES (%s, 'New') RETURNING id", (test_payload,))
+        valid_id = cur.fetchone()[0]
+        conn.commit()
+        
         cur.close()
         conn.close()
     except Exception as e:

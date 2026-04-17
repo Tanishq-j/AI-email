@@ -322,9 +322,7 @@ def get_scheduled_emails():
             WHERE scheduling_status != 'New'
             ORDER BY COALESCE(scheduled_time, '2099-01-01'::timestamp) ASC
         """)
-        results = cursor.fetchall()
-        print(f"DEBUG FETCHALL: {results}")
-        return {"scheduled": results}
+        return {"scheduled": cursor.fetchall()}
     except Exception as e:
         print(f"Scheduled fetch error details: {str(e)}")
         import traceback
