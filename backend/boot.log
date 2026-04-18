@@ -1,0 +1,234 @@
+DATABASE_ID: postgresql://user:password@localhost:5432/email_intelligence
+[REQLOG] Sat Apr 18 08:12:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:62693 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:12:12 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62272 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:12:47 2026 | GET http://localhost:8000/api/v1/monitor/health
+INFO:     127.0.0.1:56286 - "GET /api/v1/monitor/health HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:12:49 2026 | POST http://localhost:8000/process-email
+
+[Gateway] Triggering Graph Invocation...
+[Classifier] Invoking LLM for subject: URGENT: Critical API Failure - Production Down...
+[Classifier] Handled Response: {"category": "Urgent_Fire", "urgency_score": 95, "short_summary": "The primary API gateway is down w...
+[Researcher] Successfully pulled 2 RAG chunks.
+[Planner] LLM command package received. Action: trigger_incident
+[Planner] Final urgency_score injected: 95%  |  Action: trigger_incident
+[Gateway] Persisted to DB. New email_actions.id = 4
+INFO:     127.0.0.1:55388 - "POST /process-email HTTP/1.1" 200 OK
+--- Dispatcher Activated (Category: Urgent_Fire) ---
+Target URL: http://localhost:5678/webhook/c69bd0d4-a726-4c1c-a9a7-bf7a9337c32a
+n8n responded with status code: 200
+[REQLOG] Sat Apr 18 08:13:12 2026 | GET http://localhost:8000/process-email
+[REQLOG] Sat Apr 18 08:13:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:56281 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57210 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:12 2026 | POST http://localhost:8000/process-email
+
+[Gateway] Triggering Graph Invocation...
+[Classifier] Invoking LLM for subject: Can we schedule a sync this week?...
+[Classifier] Handled Response: {"category": "Scheduling", "urgency_score": 30, "short_summary": "Schedule a 30-minute call with the...
+[Researcher] Successfully pulled 2 RAG chunks.
+[Planner] LLM command package received. Action: propose_times
+[Planner] Final urgency_score injected: 30%  |  Action: propose_times
+[Gateway] Persisted to DB. New email_actions.id = 5
+INFO:     127.0.0.1:57213 - "POST /process-email HTTP/1.1" 200 OK
+--- Dispatcher Activated (Category: Scheduling) ---
+Target URL: http://localhost:5678/webhook/e0e75933-db58-4f63-98c1-33f5a2c25ff6
+n8n responded with status code: 200
+[REQLOG] Sat Apr 18 08:13:28 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:50998 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:29 2026 | GET http://127.0.0.1:8000/process-email
+[REQLOG] Sat Apr 18 08:13:29 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:50998 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:29 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:29 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:50998 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:34 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:34 2026 | GET http://localhost:8000/drafts
+INFO:     127.0.0.1:58032 - "GET /drafts HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:34 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:58032 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:35 2026 | GET http://localhost:8000/drafts
+INFO:     127.0.0.1:58032 - "GET /drafts HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:35 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:58032 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:37 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:53940 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:38 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:38 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:43 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:45 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:51050 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:48 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:53 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:53 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:63313 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:13:58 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:01 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:58180 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:03 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:58032 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:08 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:09 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:52573 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:10 2026 | POST http://host.docker.internal:8000/process-email
+
+[Gateway] Triggering Graph Invocation...
+[Classifier] Invoking LLM for subject: No Subject...
+[Classifier] Handled Response: {"category": "Action_Required", "urgency_score": 30, "short_summary": "Review the recommended candid...
+[Researcher] Successfully pulled 2 RAG chunks.
+[Planner] LLM command package received. Action: draft_task
+[Planner] Final urgency_score injected: 30%  |  Action: draft_task
+[Gateway] Persisted to DB. New email_actions.id = 6
+INFO:     127.0.0.1:52575 - "POST /process-email HTTP/1.1" 200 OK
+--- Dispatcher Activated (Category: Action_Required) ---
+Target URL: http://localhost:5678/webhook/general
+n8n responded with status code: 404
+[REQLOG] Sat Apr 18 08:14:13 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:17 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:60311 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:18 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:18 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:18 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:21 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:21 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:25 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:50167 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:26 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:31 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:65186 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:33 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:61363 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:36 2026 | GET http://localhost:8000/drafts
+INFO:     127.0.0.1:65186 - "GET /drafts HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:36 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:65186 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:36 2026 | GET http://localhost:8000/drafts
+INFO:     127.0.0.1:65186 - "GET /drafts HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:36 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:65186 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:41 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:57559 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:49 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:64183 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:51 2026 | GET http://localhost:8000/drafts
+[REQLOG] Sat Apr 18 08:14:51 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:53548 - "GET /scheduled-emails HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62381 - "GET /drafts HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:51 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62381 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:51 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62381 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:56 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62381 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:14:57 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:65412 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:01 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62381 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:03 2026 | GET http://localhost:8000/drafts
+[REQLOG] Sat Apr 18 08:15:03 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:62381 - "GET /drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63951 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:03 2026 | GET http://localhost:8000/drafts
+[REQLOG] Sat Apr 18 08:15:03 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:62381 - "GET /drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63951 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:05 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:52831 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:13 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:54014 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:19 2026 | GET http://localhost:8000/drafts
+[REQLOG] Sat Apr 18 08:15:19 2026 | GET http://localhost:8000/scheduled-emails
+INFO:     127.0.0.1:54617 - "GET /drafts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59791 - "GET /scheduled-emails HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:21 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:53493 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:29 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:59064 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:29 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:63611 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:29 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:63611 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:34 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:63611 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:37 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:63173 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:39 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:44 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:45 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:57343 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:49 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:53 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:53167 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:54 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:15:59 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:01 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:62913 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:04 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:09 2026 | GET http://127.0.0.1:8000/process-email
+[REQLOG] Sat Apr 18 08:16:09 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:62530 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:14 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:17 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:51361 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:19 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:24 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:25 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:61190 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:29 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:33 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:58017 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:16:34 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:51264 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:17:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:65199 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:17:12 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:59124 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:18:12 2026 | GET http://localhost:8000/process-email
+[REQLOG] Sat Apr 18 08:18:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:64409 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56040 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:19:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:57446 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:19:12 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:60123 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:20:12 2026 | GET http://127.0.0.1:8000/process-email
+[REQLOG] Sat Apr 18 08:20:12 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:50414 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60729 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:21:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:57352 - "GET /process-email HTTP/1.1" 200 OK
+[REQLOG] Sat Apr 18 08:21:12 2026 | GET http://localhost:8000/process-email
+INFO:     127.0.0.1:59107 - "GET /process-email HTTP/1.1" 200 OK
+ [REQLOG] Sat Apr 18 08:22:12 2026 | GET http://localhost:8000/process-email
+[REQLOG] Sat Apr 18 08:22:12 2026 | GET http://127.0.0.1:8000/process-email
+INFO:     127.0.0.1:64502 - "GET /process-email HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55988 - "GET /process-email HTTP/1.1" 200 OK

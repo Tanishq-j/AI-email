@@ -19,24 +19,35 @@ def process_classification(state: GraphState) -> Dict[str, Any]:
     user_info = state.get("user_info", {})
     
     prompt = PromptTemplate.from_template(
-        """You are a specialized JSON generator for SoMailer.
-Follow a strict Chain-of-Thought (CoT) reasoning path INTERNALLY, but ONLY output the final JSON.
+        """You are a specialized JSON classifier for SoMailer. Output ONLY a single raw JSON object — no prose, no markdown, no code blocks.
 
-STRICT OUTPUT RULE:
-1. You must NOT include any prose, explanations, or markdown. Output ONLY a single raw JSON object.
-2. For "category", you MUST pick EXACTLY ONE from the list. Do NOT include pipes or multiple options.
-3. Ensure all keys and string values are enclosed in DOUBLE QUOTES.
+STRICT RULES:
+1. "category" MUST be exactly ONE of: Urgent_Fire, Scheduling, Action_Required, FYI_Read, Cold_Outreach
+2. "urgency_score" is an INTEGER from 0 to 100 (NOT 0-10). Use the scale below.
+3. All keys and string values must use DOUBLE QUOTES.
+
+URGENCY SCALE (0-100):
+- 0-20: Low/informational (newsletters, FYI, cold outreach, product updates)
+- 21-40: Mild (minor action required, non-urgent meeting proposals)
+- 41-65: Moderate (action required, scheduling requests from known contacts)
+- 66-80: High (time-sensitive action, approaching deadlines)
+- 81-95: Critical (production issues, outages, security incidents, immediate response needed)
+- 96-100: Catastrophic (complete system failure, data breach, major financial impact)
+
+CATEGORY DETECTION RULES:
+- Urgent_Fire: Server down, critical errors, outages, system failures, SLA breach, security incidents, "URGENT" in subject
+- Scheduling: Any request to schedule, confirm, reschedule, or cancel a meeting/call/sync — even if embedded in an urgent email. If someone mentions a time, date, or meeting coordination, classify as Scheduling if the PRIMARY ask is meeting coordination.
+- Action_Required: Needs a response or task completion but is NOT urgent and NOT scheduling
+- FYI_Read: Informational only, no action needed
+- Cold_Outreach: Unsolicited sales, marketing, promotional, newsletter, product pitch emails
 
 Email Subject: {subject}
 Email Body: {body}
 Attachment Analysis: {attachment}
-
 User Context: {user_name} | Goal: {daily_goal} | Preference: {tone}
 
-Output JSON Template:
-{{"category": "Urgent_Fire", "urgency_score": 9, "short_summary": "Summary of the request."}}
-
-Allowed Categories: [Urgent_Fire, Scheduling, Action_Required, FYI_Read, Cold_Outreach]"""
+Output ONLY this JSON (fill in the values):
+{{"category": "CATEGORY_HERE", "urgency_score": INTEGER_0_TO_100, "short_summary": "One sentence actionable summary."}}"""
     )
     
     try:
@@ -109,8 +120,22 @@ Allowed Categories: [Urgent_Fire, Scheduling, Action_Required, FYI_Read, Cold_Ou
                 break
         if not matched: cat = "FYI_Read"
         
+    # Ensure urgency_score is on the 0-100 scale.
+    # If the LLM still returns a value <=10 (old 0-10 scale), multiply by 10 to normalize.
+    raw_score = result.get("urgency_score", 10)
+    try:
+        raw_score = int(float(raw_score))
+    except (TypeError, ValueError):
+        raw_score = 10
+    
+    # Heuristic: if score is 0-10 and the category is urgent/action, it's likely on the old 0-10 scale
+    if raw_score <= 10:
+        urgency_score = raw_score * 10
+    else:
+        urgency_score = min(raw_score, 100)
+
     return {
         "category": cat,
-        "urgency_score": result.get("urgency_score", 1),
+        "urgency_score": urgency_score,
         "short_summary": result.get("short_summary", "Email received.")
     }

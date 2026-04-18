@@ -106,45 +106,72 @@ def process_email_endpoint(email: EmailInput, background_tasks: BackgroundTasks)
     print("\n[Gateway] Triggering Graph Invocation...")
     result = graph_app.invoke(initial_state)
     cmd_package = result.get('command_package', {"action": "fallback", "payload": {}})
-    background_tasks.add_task(dispatch_command, cmd_package)
 
-    # Persistence: Save the transaction to the dashboard table
+    # ── Step 1: Persist to DB FIRST so we get the real row ID ──────────────────
+    new_row_id = None
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cursor = conn.cursor()
-        
+
+        # Authoritative urgency: use the value the Classifier node placed in state.
+        # This is already on the 0-100 scale.
+        authoritative_urgency = result.get('urgency_score', 0)
+        try:
+            authoritative_urgency = int(float(authoritative_urgency))
+        except (TypeError, ValueError):
+            authoritative_urgency = 0
+
         # Merge email input with the brain's intelligence
         dashboard_data = email.model_dump()
-        dashboard_data['classification'] = result.get('category', 'FYI_Read')
-        # Use the normalized score from command_package if available, otherwise fallback
-        dashboard_data['urgency_score'] = cmd_package.get('payload', {}).get('analysis', {}).get('urgency_score', result.get('urgency_score', 0))
-        dashboard_data['short_summary'] = result.get('short_summary', '')
-        dashboard_data['suggested_draft'] = cmd_package.get('suggested_draft', '')
-        dashboard_data['intelligence_reasoning'] = cmd_package.get('intelligence_reasoning', '')
-        dashboard_data['analysis'] = cmd_package.get('payload', {}).get('analysis', {})
-        
-        import json
-        # If the incoming payload included an email_received_at timestamp, store it in its own column
-        received_at_val = dashboard_data.get('email_received_at') if isinstance(dashboard_data, dict) else None
+        dashboard_data['classification']        = result.get('category', 'FYI_Read')
+        dashboard_data['urgency_score']         = authoritative_urgency
+        dashboard_data['short_summary']         = result.get('short_summary', '')
+        dashboard_data['suggested_draft']       = cmd_package.get('suggested_draft', '')
+        dashboard_data['intelligence_reasoning']= cmd_package.get('intelligence_reasoning', '')
+        dashboard_data['analysis']              = cmd_package.get('payload', {}).get('analysis', {})
+
+        # Keep the urgency_score inside the analysis sub-object consistent too
+        if isinstance(dashboard_data['analysis'], dict):
+            dashboard_data['analysis']['urgency_score'] = authoritative_urgency
+
+        received_at_val = dashboard_data.get('received_at')
 
         if received_at_val:
             cursor.execute(
-                "INSERT INTO email_actions (payload, email_received_at) VALUES (%s, %s)", 
+                "INSERT INTO email_actions (payload, email_received_at) VALUES (%s, %s) RETURNING id",
                 (json.dumps(dashboard_data), received_at_val)
             )
         else:
             cursor.execute(
-                "INSERT INTO email_actions (payload) VALUES (%s)", 
+                "INSERT INTO email_actions (payload) VALUES (%s) RETURNING id",
                 (json.dumps(dashboard_data),)
             )
+        new_row_id = cursor.fetchone()[0]
         conn.commit()
+        print(f"[Gateway] Persisted to DB. New email_actions.id = {new_row_id}")
     except Exception as e:
         print(f"DB Insert error: {e}")
     finally:
         if 'conn' in locals(): conn.close()
-    
+
+    # ── Step 2: Inject the real DB id before dispatching to n8n ───────────────
+    # n8n's Save Draft node uses email_action_id as the foreign key.
+    if new_row_id is not None:
+        cmd_package["email_action_id"] = new_row_id
+        payload_ref = cmd_package.get("payload", {})
+        payload_ref["card_id"] = new_row_id
+        payload_ref["email_action_id"] = new_row_id
+        cmd_package["payload"] = payload_ref
+
+    # ── Step 3: Dispatch to n8n (background — non-blocking) ────────────────────
+    # For Scheduling: n8n's Master Meeting Controller performs slot-hunting
+    # in Google Calendar and creates the final draft proposal card.
+    # For Urgent_Fire: n8n handles the tiered escalation ladder.
+    background_tasks.add_task(dispatch_command, cmd_package)
+
     return {
         "status": "success",
+        "email_action_id": new_row_id,
         "command_package": cmd_package
     }
 
