@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Send, Edit3, Trash2, Calendar, 
-  Clock, CheckCircle, X, AlertCircle, Sparkles, Tag, Archive
+  Clock, CheckCircle, X, AlertCircle, Sparkles, Tag, Archive,
+  LayoutGrid, Activity, MoreHorizontal, ChevronRight,
+  ShieldCheck, ArrowUpRight, RefreshCw
 } from 'lucide-react';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
@@ -150,133 +152,170 @@ export default function Drafts() {
   };
 
   return (
-    <div className="p-8 max-w-[1400px] mx-auto flex flex-col lg:flex-row gap-10 min-h-full">
-      <Toaster position="top-right" 
-        toastOptions={{
-          style: {
-            background: '#333',
-            color: '#fff',
-            borderRadius: '12px',
-          }
-        }} 
-      />
+    <div className="max-w-[1600px] mx-auto p-4 md:p-8 flex flex-col lg:flex-row gap-8 min-h-full font-sans">
+      <Toaster position="top-right" />
       
-      {/* Drafts Section */}
-      <div className="flex-1 max-w-4xl">
-        <header className="mb-10 flex flex-col sm:flex-row justify-between sm:items-end gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Intelligence Drafts
+      {/* ── Main Draft Hub Section ────────────────────────── */}
+      <div className="flex-1 min-w-0">
+        <header className="mb-8 flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-border pb-6">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold tracking-tight text-text flex items-center gap-2.5">
+              Draft Hub
+              <span className="text-[10px] font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20 rounded-full uppercase tracking-widest animate-pulse">
+                Live Sync
+              </span>
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-medium">
-              AI recommendations awaiting final state transition
+            <p className="text-xs text-text-3 font-medium">
+              Validate AI suggestions before final command execution
             </p>
           </div>
-          <div className="px-4 py-2 bg-gray-100 dark:bg-[#111] rounded-full border border-gray-200 dark:border-gray-800 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 whitespace-nowrap self-start sm:self-auto">
-             {drafts.length} Action{drafts.length !== 1 ? 's' : ''} Pending
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="w-7 h-7 rounded-full bg-surface2 border-2 border-surface flex items-center justify-center text-[10px] font-bold text-text-3">
+                  {String.fromCharCode(64 + i)}
+                </div>
+              ))}
+            </div>
+            <div className="h-6 w-px bg-border mx-2" />
+            <div className="bg-surface border border-border px-3 py-1.5 rounded-lg shadow-sm text-[11px] font-bold text-text-2 flex items-center gap-2">
+              <Activity size={12} className="text-primary" />
+              {drafts.length} Action{drafts.length !== 1 ? 's' : ''} Needed
+            </div>
           </div>
         </header>
 
         {loading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map(i => <div key={i} className="h-64 bg-gray-100 dark:bg-[#0a0a0a] animate-pulse w-full rounded-2xl" />)}
+          <div className="space-y-4">
+            {[1, 2].map(i => (
+              <div key={i} className="bg-surface border border-border rounded-2xl p-6 space-y-4">
+                <div className="flex gap-3 items-center">
+                  <div className="w-10 h-10 rounded-full skeleton" />
+                  <div className="h-4 w-32 skeleton rounded" />
+                </div>
+                <div className="h-20 w-full skeleton rounded-xl" />
+                <div className="h-10 w-full skeleton rounded-xl" />
+              </div>
+            ))}
           </div>
         ) : drafts.length === 0 ? (
-          <div className="p-24 text-center bg-transparent border-2 border-dashed border-gray-200 dark:border-gray-800/80 rounded-3xl">
-            <Archive size={48} className="mx-auto text-gray-300 dark:text-gray-700 mb-6" />
-            <p className="text-gray-900 dark:text-gray-100 font-bold text-xl mb-2">Zero pending drafts.</p>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">New intelligence signals will appear here for review.</p>
+          <div className="py-24 text-center bg-surface2/30 border-2 border-dashed border-border rounded-3xl flex flex-col items-center">
+            <div className="w-16 h-16 rounded-full bg-surface border border-border flex items-center justify-center mb-6 text-text-3 shadow-inner">
+              <Archive size={30} strokeWidth={1.5} />
+            </div>
+            <h3 className="text-lg font-bold text-text mb-2">Zero Active Drafts</h3>
+            <p className="text-sm text-text-3 max-w-xs mx-auto leading-relaxed">
+              Your intelligence pipeline is clear. New signals will appear here for manual override.
+            </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <AnimatePresence>
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
               {drafts.map(draft => (
                 <motion.div
                   key={draft.id}
                   layout
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  className="bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-gray-800/60 rounded-3xl p-8 shadow-sm group relative"
+                  className="bg-surface border border-border rounded-2xl shadow-sm hover:shadow-md transition-all group overflow-hidden"
                 >
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="space-y-3">
-                       <div className="flex flex-wrap gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900 text-[11px] font-bold uppercase rounded-full tracking-wider">
-                          <Sparkles size={12} /> {draft.type}
-                        </span>
-                        {(draft.tags || []).map(tag => (
-                          <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 text-[11px] font-bold uppercase rounded-full tracking-wider">
-                             <Tag size={12} /> {tag}
+                  {/* Card Header */}
+                  <div className="p-5 border-b border-border/50 flex flex-col sm:flex-row justify-between gap-4 bg-surface2/20">
+                    <div className="flex gap-4 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
+                        <Sparkles size={18} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
+                            {draft.type}
                           </span>
-                        ))}
-                       </div>
-                      <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100 leading-tight">{draft.subject}</h3>
-                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 tracking-wide">
-                        <span className="uppercase tracking-widest text-[10px] mr-2">Recipient</span> 
-                        {draft.recipient}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={() => setEditingDraft(draft)}
-                      className="p-3 bg-gray-50 dark:bg-[#111111] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl text-gray-500 dark:text-gray-400 hover:text-emerald-600 transition-colors border border-gray-200 dark:border-gray-800"
-                      title="Edit Draft"
-                    >
-                      <Edit3 size={18} />
-                    </button>
-                  </div>
-
-                  <div className="bg-gray-50/50 dark:bg-[#111111] p-6 rounded-2xl text-sm text-gray-700 dark:text-gray-300 mb-8 border border-gray-100 dark:border-gray-800/80 leading-relaxed font-sans shadow-inner whitespace-pre-wrap">
-                    {draft.content}
-                  </div>
-
-                  {draft.type === 'Scheduling Proposal' && draft.suggested_slots && draft.suggested_slots.length > 0 && (
-                    <div className="mb-8 p-5 bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Calendar size={14} className="text-blue-600 dark:text-blue-400" />
-                        <p className="text-[11px] font-bold text-blue-800 dark:text-blue-300 uppercase tracking-widest">Select a time to confirm mapping:</p>
-                      </div>
-                      <div className="flex flex-wrap gap-2.5">
-                        {draft.suggested_slots.map((slot, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => handleSelectSlot(draft, slot)}
-                            className={`px-4 py-2.5 rounded-xl text-[12px] font-semibold border transition-all ${
-                              selectedTime[draft.id] === slot 
-                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/20' 
-                                : 'bg-white dark:bg-[#1a1a1a] border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-emerald-400'
-                            }`}
-                          >
-                            {new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(slot).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                          </button>
-                        ))}
+                          {(draft.tags || []).map(tag => (
+                            <span key={tag} className="text-[10px] font-bold uppercase tracking-widest text-text-3 bg-surface border border-border px-2 py-0.5 rounded-md">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <h3 className="font-bold text-[15px] text-text truncate group-hover:text-primary transition-colors">
+                          {draft.subject}
+                        </h3>
+                        <p className="text-[11px] text-text-3 mt-0.5 flex items-center gap-1.5 font-medium">
+                          Recipient: <span className="text-text-2">{draft.recipient}</span>
+                        </p>
                       </div>
                     </div>
-                  )}
+                    <div className="flex items-center gap-2 shrink-0">
+                       <button 
+                        onClick={() => setEditingDraft(draft)}
+                        className="p-2.5 rounded-xl bg-surface border border-border text-text-3 hover:text-primary hover:border-primary/40 transition-all shadow-sm"
+                        title="Modify Content"
+                       >
+                        <Edit3 size={16} />
+                       </button>
+                    </div>
+                  </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  {/* Card Content Area */}
+                  <div className="p-5">
+                    <div className="bg-bg border border-border p-4 rounded-xl text-[13px] text-text-2 leading-relaxed whitespace-pre-wrap font-medium shadow-inner">
+                      {draft.content}
+                    </div>
+
+                    {/* Scheduling Helper */}
+                    {draft.type === 'Scheduling Proposal' && draft.suggested_slots && draft.suggested_slots.length > 0 && (
+                      <div className="mt-4 p-4 bg-primary/5 border border-primary/10 rounded-xl">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Calendar size={13} className="text-primary" />
+                          <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Select Meeting Anchor:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {draft.suggested_slots.map((slot, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleSelectSlot(draft, slot)}
+                              className={`px-3 py-2 rounded-lg text-[11px] font-bold border transition-all ${
+                                selectedTime[draft.id] === slot 
+                                  ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' 
+                                  : 'bg-surface border-border text-text-2 hover:border-primary/50'
+                              }`}
+                            >
+                              {new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(slot).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="px-5 pb-5 pt-1 flex flex-col sm:flex-row gap-3">
                     <button 
                       onClick={() => handleExecute(draft)}
                       disabled={isExecuting[draft.id] || (draft.type === 'Scheduling Proposal' && !selectedTime[draft.id])}
-                      className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl flex items-center justify-center py-3.5 text-sm font-bold shadow-sm disabled:opacity-50 disabled:hover:bg-emerald-500 transition-colors"
+                      className="flex-1 bg-primary hover:bg-primary/90 text-white rounded-xl flex items-center justify-center py-3 text-sm font-bold shadow-sm shadow-primary/20 disabled:opacity-50 transition-all group/btn"
                     >
-                      <Send size={16} className={`mr-2 ${isExecuting[draft.id] ? 'animate-pulse' : ''}`} /> 
-                      {isExecuting[draft.id] ? 'Processing Protocol...' : (selectedTime[draft.id] ? 'Confirm & Dispatch' : (draft.type === 'Scheduling Proposal' ? 'Select Slot to Dispatch' : 'Execute Command'))}
+                      {isExecuting[draft.id] ? (
+                        <RefreshCw size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <Send size={16} className="mr-2 group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5 transition-transform" /> 
+                      )}
+                      {isExecuting[draft.id] ? 'Executing Command...' : (selectedTime[draft.id] ? 'Confirm & Dispatch' : (draft.type === 'Scheduling Proposal' ? 'Select Slot to Proceed' : 'Dispatch Draft'))}
                     </button>
-                    <div className="flex gap-3">
+                    
+                    <div className="flex gap-2.5">
                       <button 
                         onClick={() => handleIgnore(draft.email_action_id)}
-                        className="px-6 py-3 bg-gray-50 dark:bg-[#111] text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800 text-sm font-semibold flex items-center gap-2 transition-colors"
-                        title="Archive Signal"
+                        className="flex-1 sm:flex-none px-5 py-3 bg-surface text-text-2 border border-border rounded-xl hover:bg-surface2 hover:text-text text-xs font-bold transition-colors flex items-center justify-center gap-2"
                       >
-                        <X size={16} /> Ignore
+                        <Archive size={14} /> Ignore
                       </button>
                       <button 
                         onClick={() => handleDelete(draft.id)}
-                        className="px-4 py-3 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl border border-red-100 dark:border-red-900/30 transition-colors"
-                        title="Discard Draft Entirely"
+                        className="px-4 py-3 bg-red-500/10 text-red-600 border border-red-500/20 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"
+                        title="Delete Permanently"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
@@ -287,39 +326,51 @@ export default function Drafts() {
         )}
       </div>
 
-      {/* Management Sidebar */}
-      <div className="w-full lg:w-96 shrink-0 lg:pt-1">
-        <div className="bg-white dark:bg-[#0a0a0a] border border-gray-200 dark:border-gray-800/60 rounded-3xl sticky top-8 p-7 shadow-sm">
-          <header className="mb-8 pb-6 border-b border-gray-100 dark:border-gray-800/80">
-            <h3 className="font-bold text-sm uppercase tracking-[0.15em] text-gray-900 dark:text-white flex items-center gap-3">
-              <div className="p-1.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-md">
-                <Calendar size={16} className="text-emerald-600 dark:text-emerald-500" strokeWidth={2.5} />
-              </div>
-              Lifecycle Hub
-            </h3>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-3 font-semibold uppercase tracking-wider">
-              Monitoring Active Commitments
-            </p>
+      {/* ── Lifecycle Hub Sidebar ────────────────────────── */}
+      <aside className="w-full lg:w-[380px] shrink-0">
+        <div className="bg-surface border border-border rounded-2xl sticky top-8 p-6 shadow-sm flex flex-col h-fit">
+          <header className="mb-6 flex items-center justify-between border-b border-border pb-5">
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm text-text flex items-center gap-2">
+                <ShieldCheck size={16} className="text-primary" strokeWidth={2.5} />
+                Lifecycle Hub
+              </h3>
+              <p className="text-[10px] text-text-3 font-bold uppercase tracking-widest">
+                Active System State
+              </p>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-surface2 border border-border flex items-center justify-center text-text-3">
+              <Activity size={14} />
+            </div>
           </header>
 
-          {scheduled.length === 0 ? (
-            <div className="py-14 text-center bg-gray-50 dark:bg-[#111] rounded-2xl border border-gray-100 dark:border-gray-800/60">
-              <Clock size={28} className="mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider">No Active Schedules</p>
-            </div>
-          ) : (
-            <div className="space-y-5">
-              {scheduled.map(item => (
-                <div key={item.id} className="p-5 bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-800/80 rounded-2xl hover:border-emerald-500/30 transition-colors shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">{item.scheduling_status}</span>
+          <div className="space-y-4">
+            {scheduled.length === 0 ? (
+              <div className="py-12 text-center bg-bg/50 border border-dashed border-border rounded-2xl">
+                <Clock size={24} className="mx-auto text-text-3 mb-3 opacity-30" />
+                <p className="text-[11px] text-text-3 font-bold uppercase tracking-wider">No Active Schedules</p>
+              </div>
+            ) : (
+              scheduled.map(item => (
+                <div key={item.id} className="p-4 bg-bg border border-border rounded-xl hover:border-primary/30 transition-all group/status">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-text-2">{item.scheduling_status}</span>
+                    </div>
+                    <button className="text-text-3 hover:text-text transition-colors">
+                       <MoreHorizontal size={14} />
+                    </button>
                   </div>
-                  <h4 className="font-bold text-sm mb-1.5 truncate text-gray-900 dark:text-gray-100">{item.subject}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mb-5">Party: {item.sender}</p>
                   
-                  <div className="flex items-center gap-2.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-3.5 py-2.5 rounded-xl mb-5 border border-emerald-100 dark:border-emerald-900/30">
-                    <Clock size={14} />
+                  <h4 className="font-bold text-[13px] text-text truncate mb-1">{item.subject}</h4>
+                  <p className="text-[11px] text-text-3 truncate mb-4">Partner: {item.sender}</p>
+                  
+                  <div className="flex items-center gap-2 text-[11px] font-bold text-primary bg-primary/10 px-3 py-2 rounded-lg border border-primary/10 mb-4">
+                    <Calendar size={13} />
                     {item.scheduled_time 
                       ? (() => {
                           const normalized = item.scheduled_time.replace(' ', 'T');
@@ -330,74 +381,81 @@ export default function Drafts() {
                     }
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2">
                     <button 
                       onClick={() => handleMeetingAction('reschedule', item)}
-                      className="py-2.5 rounded-lg bg-white dark:bg-[#1a1a1a] text-xs font-bold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-[#222]"
+                      className="py-2 rounded-lg bg-surface text-[11px] font-bold text-text-2 border border-border hover:bg-surface2 transition-colors flex items-center justify-center gap-1.5"
                     >
                       Reschedule
                     </button>
                     <button 
                       onClick={() => handleMeetingAction('cancel', item)}
-                      className="py-2.5 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold border border-red-100 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/40"
+                      className="py-2 rounded-lg bg-red-500/10 text-red-600 text-[11px] font-bold border border-red-500/20 hover:bg-red-500 hover:text-white transition-all"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-          
-          <div className="mt-8 p-4 bg-gray-50 dark:bg-[#111] rounded-xl text-xs text-gray-500 dark:text-gray-400 leading-relaxed border border-gray-200 dark:border-gray-800">
-            <span className="font-bold text-gray-700 dark:text-gray-300">System Protocol:</span> Calendar blocks are continuously synchronized using the n8n Master Conflict layer. 
+              ))
+            )}
+          </div>
+
+          {/* Sidebar Footer Insight */}
+          <div className="mt-6 p-4 bg-surface2/50 border border-border rounded-xl space-y-2">
+             <div className="flex items-center gap-2 text-text-2 font-bold text-[10px] uppercase tracking-wider">
+               <AlertCircle size={12} className="text-primary" />
+               System Protocol
+             </div>
+             <p className="text-[11px] text-text-3 leading-relaxed">
+               Meeting conflicts are resolved using the <span className="text-text-2 font-semibold">n8n Master Conflict layer</span>. Synchronization happens every 15s.
+             </p>
           </div>
         </div>
-      </div>
+      </aside>
 
-      {/* Edit Overlay */}
+      {/* ── Manual Review Overlay ─────────────────────────── */}
       <AnimatePresence>
         {editingDraft && (
-          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 sm:p-8">
+          <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
               onClick={() => setEditingDraft(null)}
-              className="absolute inset-0 bg-gray-900/40 dark:bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-[#0a0a0a] w-full max-w-3xl rounded-[32px] shadow-2xl relative z-10 overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col max-h-[90vh]"
+              className="bg-surface w-full max-w-2xl rounded-3xl shadow-2xl relative z-10 overflow-hidden border border-border flex flex-col max-h-[85vh]"
             >
-              <div className="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-[#111111]">
-                <div>
-                   <h3 className="font-bold text-xl text-gray-900 dark:text-white">Review & Edit Draft</h3>
-                   <p className="text-xs font-bold text-emerald-600 dark:text-emerald-500 uppercase mt-1.5 tracking-wider">Manual Content Override</p>
+              <div className="p-6 border-b border-border flex justify-between items-center bg-surface2/30">
+                <div className="space-y-1">
+                   <h3 className="font-bold text-lg text-text">Review Signal Payload</h3>
+                   <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Manual Command Override</p>
                 </div>
-                <button onClick={() => setEditingDraft(null)} className="p-2.5 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-full transition-colors text-gray-500 dark:text-gray-400"><X size={20} strokeWidth={2.5} /></button>
+                <button onClick={() => setEditingDraft(null)} className="p-2 hover:bg-surface2 rounded-full transition-colors text-text-3"><X size={20} /></button>
               </div>
-              <div className="p-6 sm:p-8 overflow-y-auto">
+              <div className="p-6 overflow-y-auto bg-bg">
                 <textarea 
-                  className="w-full min-h-[300px] bg-gray-50 dark:bg-[#111] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-[15px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-y font-sans leading-relaxed transition-shadow"
+                  className="w-full min-h-[300px] bg-surface border border-border rounded-2xl p-5 text-[14px] text-text-2 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y font-sans leading-relaxed transition-shadow shadow-inner"
                   value={editingDraft.content}
                   onChange={(e) => setEditingDraft({...editingDraft, content: e.target.value})}
                 />
               </div>
-              <div className="p-6 sm:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-[#111111] flex justify-end gap-3 sm:gap-4 shrink-0">
+              <div className="p-6 border-t border-border bg-surface2/30 flex justify-end gap-3 shrink-0">
                 <button 
                   onClick={() => setEditingDraft(null)} 
-                  className="px-6 py-3.5 rounded-xl font-bold text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors"
+                  className="px-5 py-2.5 rounded-xl font-bold text-xs text-text-3 hover:bg-surface2 transition-colors"
                 >
                   Discard Changes
                 </button>
                 <button 
                   onClick={() => handleUpdate(editingDraft.id, editingDraft.content)}
-                  className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-sm transition-colors"
+                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-primary/20 transition-all flex items-center gap-2"
                 >
-                  Save & Synchronize
+                  Save & Sync <ArrowUpRight size={14} />
                 </button>
               </div>
             </motion.div>

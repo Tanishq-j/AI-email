@@ -7,7 +7,6 @@ import { Search, Bell } from 'lucide-react';
 import { ThemeProvider } from './components/ThemeContext';
 import AutomatedEmailHome from './components/AutomatedEmailHome';
 import Sidebar       from './components/Sidebar';
-import CommandCenter from './components/CommandCenter';
 import IntelligenceFeed from './components/IntelligenceFeed';
 import AssistantWidget  from './components/AssistantWidget';
 import VisionArchive    from './components/VisionArchive_Enhanced';
@@ -62,7 +61,7 @@ const Placeholder = ({ title }) => (
 
 /* ── App shell ─────────────────────────────────────────── */
 function Shell() {
-  const [tab, setTab]        = useState('command');
+  const [tab, setTab]        = useState('inbox');
   const [search, setSearch]  = useState('');
 
   return (
@@ -100,12 +99,6 @@ function Shell() {
         <div className="page-body">
           <AnimatePresence mode="wait">
             <div key={tab}>
-              {tab === 'command' && (
-                <>
-                  <CommandCenter />
-                  <IntelligenceFeed />
-                </>
-              )}
               {tab === 'inbox'     && <IntelligenceFeed />}
               {tab === 'analytics' && <Analytics />}
               {tab === 'drafts'    && <Drafts />}
