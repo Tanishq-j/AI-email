@@ -7,7 +7,6 @@ import {
 import { useTheme } from './ThemeContext';
 
 const NAV = [
-  { id: 'command',    icon: LayoutDashboard, label: 'Command Center' },
   { id: 'inbox',      icon: Inbox,           label: 'Intelligence Feed' },
   { id: 'drafts',     icon: Edit3,           label: 'Draft Hub' },
   { id: 'analytics',  icon: BarChart3,        label: 'Analytics' },
@@ -35,7 +34,7 @@ export default function Sidebar({ active, onNav }) {
     <div className="sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
-        <div className="brand-mark">S</div>
+        <img src="/logo.png" height={34} width={34} alt="" />
         <div>
           <div style={{ fontWeight: 700, fontSize: 13.5, letterSpacing: '-0.01em' }}>SoMailer</div>
           <div style={{ fontSize: 11, color: 'var(--text-3)' }}>AI Email Brain</div>

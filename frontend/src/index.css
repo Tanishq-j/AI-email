@@ -265,7 +265,7 @@ body,
     animation: pulse-green 2s infinite;
 }
 .status-dot.offline {
-    background: var(--primary);
+    background: var(--color-red-500);
 }
 
 @keyframes pulse-green {

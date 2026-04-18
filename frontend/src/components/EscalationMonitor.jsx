@@ -1,112 +1,100 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
-import { Activity, RefreshCw, AlertTriangle, CheckCircle, Info, Zap, Clock } from 'lucide-react';
+import { 
+  Activity, RefreshCw, AlertTriangle, CheckCircle, 
+  Info, Zap, Clock, ShieldAlert, ChevronRight, 
+  Mail, Fingerprint, Calendar
+} from 'lucide-react';
 
 const API = 'http://127.0.0.1:8000/api/v1/monitor/escalations?limit=15';
-const POLL_INTERVAL = 12000; // 12 seconds
+const POLL_INTERVAL = 12000;
 
-// ── Status config ────────────────────────────────────────────────────────────
+// ── Status config mapping to index.css tokens ────────────────────────────────
 
-const STATUS_CONFIG = {
+const STATUS_MAP = {
   critical_escalation: {
     label: 'Critical',
     color: '#e11d48',
-    bg: 'rgba(225,29,72,0.08)',
-    border: 'rgba(225,29,72,0.25)',
-    pulse: true,
-    icon: AlertTriangle,
+    badge: 'badge-urgent',
+    icon: ShieldAlert,
+    pulse: true
   },
   flagated_high: {
     label: 'High',
     color: '#d97706',
-    bg: 'rgba(217,119,6,0.08)',
-    border: 'rgba(217,119,6,0.25)',
-    pulse: false,
+    badge: 'badge-urgent',
     icon: AlertTriangle,
+    pulse: false
   },
   flagged_medium: {
     label: 'Medium',
     color: '#2563eb',
-    bg: 'rgba(37,99,235,0.08)',
-    border: 'rgba(37,99,235,0.25)',
-    pulse: false,
+    badge: 'badge-action',
     icon: Info,
+    pulse: false
   },
   flagged_low: {
     label: 'Low',
     color: '#2563eb',
-    bg: 'rgba(37,99,235,0.06)',
-    border: 'rgba(37,99,235,0.18)',
-    pulse: false,
+    badge: 'badge-team',
     icon: Info,
+    pulse: false
   },
   resolved: {
     label: 'Resolved',
     color: '#16a34a',
-    bg: 'rgba(22,163,74,0.08)',
-    border: 'rgba(22,163,74,0.25)',
-    pulse: false,
+    badge: 'badge-fyi',
     icon: CheckCircle,
+    pulse: false
   },
   false_positive: {
     label: 'False +',
     color: '#64748b',
-    bg: 'rgba(100,116,139,0.08)',
-    border: 'rgba(100,116,139,0.2)',
-    pulse: false,
+    badge: 'badge-cold',
     icon: CheckCircle,
+    pulse: false
   },
   New: {
     label: 'Unprocessed',
-    color: '#64748b',
-    bg: 'rgba(100,116,139,0.06)',
-    border: 'rgba(100,116,139,0.15)',
-    pulse: false,
+    color: '#94a3b8',
+    badge: 'badge-schedule',
     icon: Clock,
+    pulse: false
   },
 };
 
-const DEFAULT_STATUS = {
-  label: 'Pending',
+const getStatus = (key) => STATUS_MAP[key] ?? {
+  label: key || 'Pending',
   color: '#94a3b8',
-  bg: 'rgba(148,163,184,0.08)',
-  border: 'rgba(148,163,184,0.2)',
-  pulse: false,
+  badge: 'badge-cold',
   icon: Clock,
+  pulse: false
 };
 
-function getStatus(key) {
-  return STATUS_CONFIG[key] ?? DEFAULT_STATUS;
-}
+// ── Components ───────────────────────────────────────────────────────────────
 
-// ── Score bar ────────────────────────────────────────────────────────────────
-
-function ScoreBar({ score, color }) {
+const ScoreBar = ({ score, color }) => {
   const pct = Math.min(Math.max(score ?? 0, 0), 100);
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{
-        flex: 1, height: 4, borderRadius: 2,
-        background: 'var(--surface2)', overflow: 'hidden',
-      }}>
+    <div className="flex items-center gap-3 w-full">
+      <div className="flex-1 h-1.5 bg-surface2 rounded-full overflow-hidden border border-border/30">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          style={{ height: '100%', borderRadius: 2, background: color }}
+          transition={{ duration: 1, ease: 'circOut' }}
+          className="h-full rounded-full"
+          style={{ backgroundColor: '#10b981' }} 
         />
       </div>
-      <span style={{ fontSize: 11, fontWeight: 600, color, minWidth: 30, textAlign: 'right' }}>
-        {pct.toFixed(0)}%
+      <span className="text-[10px] font-bold tabular-nums min-w-[30px]" style={{ color }}>
+        {pct}%
       </span>
     </div>
   );
-}
+};
 
-// ── Single incident card ─────────────────────────────────────────────────────
-
-function IncidentCard({ item, isNew }) {
+const IncidentCard = ({ item, isNew }) => {
   const cfg = getStatus(item.scheduling_status);
   const Icon = cfg.icon;
 
@@ -115,156 +103,124 @@ function IncidentCard({ item, isNew }) {
         timeZone: 'Asia/Kolkata',
         day: '2-digit', month: 'short',
         hour: '2-digit', minute: '2-digit',
-        hour12: true,
       })
-    : '—';
+    : 'Pending Sync';
 
   return (
     <motion.div
       layout
-      initial={isNew ? { opacity: 0, y: -12 } : false}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, height: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
-      style={{
-        background: 'var(--surface)',
-        border: `1px solid ${cfg.border}`,
-        borderLeft: `3px solid ${cfg.color}`,
-        borderRadius: 7,
-        padding: '13px 16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
+      initial={isNew ? { opacity: 0, scale: 0.98, y: -10 } : false}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      className="bg-surface border border-border rounded-xl p-5 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col gap-4"
     >
-      {/* Pulsing overlay for critical */}
+      {/* Visual Accent */}
+      <div className="absolute top-0 left-0 w-1.5 h-full opacity-70" style={{ backgroundColor: cfg.color }} />
+      
       {cfg.pulse && (
         <motion.div
-          animate={{ opacity: [0.06, 0.14, 0.06] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
-          style={{
-            position: 'absolute', inset: 0,
-            background: cfg.color,
-            pointerEvents: 'none', borderRadius: 7,
-          }}
+          animate={{ opacity: [0.03, 0.08, 0.03] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundColor: cfg.color }}
         />
       )}
 
-      {/* Row 1: status badge + id + timestamp */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 4,
-          fontSize: 10.5, fontWeight: 700,
-          padding: '2px 7px', borderRadius: 4,
-          background: cfg.bg, color: cfg.color,
-          border: `1px solid ${cfg.border}`,
-          textTransform: 'uppercase', letterSpacing: '0.05em',
-        }}>
-          {cfg.pulse && (
-            <motion.span
-              animate={{ opacity: [1, 0.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-              style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.color, display: 'inline-block' }}
-            />
+      {/* Header Info */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pl-1">
+        <div className="flex items-center gap-3">
+          <div className={`badge ${cfg.badge} flex items-center gap-1.5 shadow-sm`}>
+            {cfg.pulse && (
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: cfg.color }}></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: cfg.color }}></span>
+              </span>
+            )}
+            <Icon size={12} />
+            {cfg.label}
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-bold text-text-3 uppercase tracking-widest bg-surface2/40 px-2 py-0.5 rounded border border-border/50">
+             <Fingerprint size={10} /> {item.id}
+          </div>
+          {item.classification && (
+            <span className="text-[10px] font-bold text-text-2 bg-bg border border-border px-2 py-0.5 rounded-md uppercase tracking-wider">
+              {item.classification.replace(/_/g, ' ')}
+            </span>
           )}
-          <Icon size={10} />
-          {cfg.label}
-        </span>
-        <span style={{ fontSize: 11, color: 'var(--text-3)', fontFamily: 'monospace' }}>
-          #{item.id}
-        </span>
-        {item.classification && (
-          <span style={{
-            fontSize: 10.5, color: 'var(--text-3)',
-            border: '1px solid var(--border)',
-            padding: '1px 6px', borderRadius: 3,
-          }}>
-            {item.classification.replace(/_/g, ' ')}
-          </span>
-        )}
-        <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-3)' }}>
-          {ts}
-        </span>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-bold text-text-3 uppercase tracking-widest">
+           <Calendar size={11} /> {ts}
+        </div>
       </div>
 
-      {/* Row 2: subject / summary */}
-      <div>
-        {item.subject && (
-          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>
-            {item.subject}
-          </div>
-        )}
-        {item.summary && (
-          <div style={{
-            fontSize: 12, color: 'var(--text-2)',
-            display: '-webkit-box', WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>
-            {item.summary}
-          </div>
-        )}
+      {/* Main Content */}
+      <div className="space-y-1.5 pl-1">
+        <h4 className="text-[15px] font-bold text-text group-hover:text-primary transition-colors line-clamp-1">
+          {item.subject || 'Internal System Alert'}
+        </h4>
+        <p className="text-[12px] text-text-2 leading-relaxed line-clamp-2">
+          {item.summary || 'No detailed diagnostic summary available for this escalation event.'}
+        </p>
       </div>
 
-      {/* Row 3: score bar */}
-      {typeof item.urgency_score === 'number' && (
+      {/* Urgency Score */}
+      <div className="pl-1 space-y-2">
+        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest text-text-3">
+          <span>Urgency Level</span>
+          <span style={{ color: cfg.color }}>Tier Analysis</span>
+        </div>
         <ScoreBar score={item.urgency_score} color={cfg.color} />
-      )}
+      </div>
 
-      {/* Row 4: sender */}
+      {/* Footer Info */}
       {item.sender_email && (
-        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
-          From: <span style={{ color: 'var(--text-2)' }}>{item.sender_email}</span>
+        <div className="pt-3 border-t border-border/50 flex items-center justify-between pl-1">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-text-3">
+            <Mail size={12} />
+            Origin: <span className="text-text-2 font-bold">{item.sender_email}</span>
+          </div>
+          <button className="p-1.5 hover:bg-surface2 rounded-lg text-text-3 transition-colors">
+            <ChevronRight size={14} />
+          </button>
         </div>
       )}
     </motion.div>
   );
-}
+};
 
-// ── Skeleton loader ──────────────────────────────────────────────────────────
-
-function SkeletonCard() {
-  return (
-    <div style={{
-      background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 7, padding: '13px 16px', display: 'flex', flexDirection: 'column', gap: 8,
-    }}>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <div className="skeleton" style={{ width: 60, height: 18, borderRadius: 4 }} />
-        <div className="skeleton" style={{ width: 36, height: 14, borderRadius: 3 }} />
-        <div className="skeleton" style={{ width: 100, height: 14, borderRadius: 3, marginLeft: 'auto' }} />
-      </div>
-      <div className="skeleton" style={{ width: '70%', height: 16, borderRadius: 4 }} />
-      <div className="skeleton" style={{ width: '90%', height: 13, borderRadius: 3 }} />
-      <div className="skeleton" style={{ width: '100%', height: 4, borderRadius: 2 }} />
+const SkeletonCard = () => (
+  <div className="bg-surface border border-border rounded-xl p-5 space-y-4 animate-pulse">
+    <div className="flex justify-between">
+      <div className="h-6 w-24 bg-surface2 rounded-md" />
+      <div className="h-4 w-32 bg-surface2 rounded-md" />
     </div>
-  );
-}
+    <div className="h-5 w-3/4 bg-surface2 rounded-md" />
+    <div className="h-4 w-full bg-surface2 rounded-md" />
+    <div className="h-2 w-full bg-surface2 rounded-full" />
+  </div>
+);
 
-// ── Tier legend ──────────────────────────────────────────────────────────────
-
-function TierLegend() {
+const TierLegend = () => {
   const tiers = [
-    { label: 'Tier 1', desc: '0–50%', color: '#2563eb' },
-    { label: 'Tier 2', desc: '51–70%', color: '#2563eb' },
-    { label: 'Tier 3', desc: '71–85%', color: '#d97706' },
-    { label: 'Tier 4', desc: '86–100%', color: '#e11d48' },
+    { label: 'T1', desc: 'Normal', color: '#2563eb' },
+    { label: 'T2', desc: 'Priority', color: '#2563eb' },
+    { label: 'T3', desc: 'Sensitive', color: '#d97706' },
+    { label: 'T4', desc: 'Critical', color: '#e11d48' },
   ];
   return (
-    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+    <div className="flex flex-wrap gap-4 items-center">
       {tiers.map(t => (
-        <div key={t.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: t.color, display: 'inline-block' }} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: t.color }}>{t.label}</span>
-          <span style={{ fontSize: 11, color: 'var(--text-3)' }}>{t.desc}</span>
+        <div key={t.label} className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: t.color }} />
+          <span className="text-[10px] font-bold text-text-2 uppercase tracking-tighter">{t.label}</span>
+          <span className="text-[10px] text-text-3 font-medium">{t.desc}</span>
         </div>
       ))}
     </div>
   );
-}
+};
 
-// ── Main component ───────────────────────────────────────────────────────────
+// ── Main Component ───────────────────────────────────────────────────────────
 
 export default function EscalationMonitor() {
   const [items, setItems]       = useState([]);
@@ -293,7 +249,7 @@ export default function EscalationMonitor() {
       setLastSync(new Date());
       setError(null);
     } catch (e) {
-      setError('Could not reach backend. Is FastAPI running on port 8000?');
+      setError('System Node Offline: Failed to establish link to monitor gateway.');
     } finally {
       setLoading(false);
       if (manual) setTimeout(() => setSpinning(false), 600);
@@ -313,109 +269,128 @@ export default function EscalationMonitor() {
   }, {});
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      style={{ padding: '24px 26px', maxWidth: 860 }}
-    >
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Activity size={16} color="var(--primary)" strokeWidth={2} />
-          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
-            Escalation Monitor
-          </span>
-          <span style={{
-            fontSize: 11, fontWeight: 600, padding: '2px 7px',
-            borderRadius: 4, background: 'var(--primary-bg)', color: 'var(--primary)',
-            border: '1px solid rgba(225,29,72,0.2)',
-          }}>
-            Live
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {lastSync && (
-            <span style={{ fontSize: 11, color: 'var(--text-3)' }}>
-              Synced {lastSync.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          )}
-          <motion.button
-            onClick={() => fetchData(true)}
-            animate={spinning ? { rotate: 360 } : { rotate: 0 }}
-            transition={{ duration: 0.5 }}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '5px 10px', borderRadius: 5, border: '1px solid var(--border)',
-              background: 'transparent', color: 'var(--text-2)', cursor: 'pointer',
-              fontSize: 12, fontWeight: 500,
-            }}
-          >
-            <RefreshCw size={12} />
-            Refresh
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Tier legend */}
-      <div style={{
-        marginBottom: 16,
-        padding: '10px 14px',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 7,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 10,
-      }}>
-        <TierLegend />
-        {/* Status counts */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          {Object.entries(counts).map(([status, n]) => {
-            const cfg = getStatus(status);
-            return (
-              <span key={status} style={{ fontSize: 11, color: cfg.color, fontWeight: 600 }}>
-                {n} {cfg.label}
-              </span>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Error */}
-      {error && (
-        <div style={{
-          padding: '10px 14px', borderRadius: 6, marginBottom: 14,
-          background: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.2)',
-          color: '#e11d48', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
-        }}>
-          <Zap size={13} /> {error}
-        </div>
-      )}
-
-      {/* Feed */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {loading ? (
-          Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
-        ) : items.length === 0 ? (
-          <div style={{
-            padding: '32px 0', textAlign: 'center',
-            color: 'var(--text-3)', fontSize: 13,
-          }}>
-            No escalation records found. Run a tier test to see results here.
+    <div className="min-h-full flex justify-center py-8 px-4 font-sans">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-[900px] flex flex-col gap-6"
+      >
+        {/* Header Block */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border-b border-border pb-8">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm border border-primary/20">
+                <Activity size={20} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-text leading-none">
+                  Escalation Monitor
+                </h1>
+                <p className="text-xs text-text-3 font-semibold uppercase tracking-widest mt-1">
+                  Tier Analysis & Risk Mitigation
+                </p>
+              </div>
+            </div>
           </div>
-        ) : (
-          <AnimatePresence>
-            {items.map(item => (
-              <IncidentCard
-                key={item.id}
-                item={item}
-                isNew={newIds.has(item.id)}
-              />
-            ))}
-          </AnimatePresence>
-        )}
-      </div>
-    </motion.div>
+
+          <div className="flex items-center gap-4 bg-surface border border-border p-2 rounded-xl shadow-sm">
+            <div className="flex flex-col items-end px-3">
+              <span className="text-[10px] font-bold text-text-3 uppercase tracking-widest">Global Status</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                <span className="text-xs font-bold text-text">Operational</span>
+              </div>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <motion.button
+              onClick={() => fetchData(true)}
+              className="p-2.5 rounded-lg hover:bg-surface2 text-text-2 transition-colors relative"
+              title="Force Re-sync"
+            >
+              <RefreshCw size={16} className={spinning ? 'animate-spin' : ''} />
+            </motion.button>
+          </div>
+        </header>
+
+        {/* Diagnostic Meta Bar */}
+        <div className="bg-surface border border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+          <TierLegend />
+          
+          <div className="flex items-center gap-4 border-l border-border pl-6">
+            {Object.entries(counts).map(([status, n]) => {
+              const cfg = getStatus(status);
+              if (n === 0) return null;
+              return (
+                <div key={status} className="flex flex-col items-center">
+                  <span className="text-lg font-bold tabular-nums leading-none" style={{ color: cfg.color }}>{n}</span>
+                  <span className="text-[9px] font-bold text-text-3 uppercase mt-1 tracking-tighter">{cfg.label}</span>
+                </div>
+              );
+            })}
+            {lastSync && (
+              <div className="flex flex-col items-end border-l border-border pl-6">
+                <span className="text-[10px] font-bold text-text-3 uppercase tracking-widest">Last Pulse</span>
+                <span className="text-xs font-bold text-text-2 mt-0.5">
+                  {lastSync.toLocaleTimeString('en-IN', { hour12: false })}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Critical Alerts / Errors */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3 text-red-600 shadow-sm overflow-hidden"
+            >
+              <Zap size={18} />
+              <p className="text-xs font-bold uppercase tracking-wide">{error}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Incident Feed Container */}
+        <div className="space-y-4">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
+          ) : items.length === 0 ? (
+            <div className="py-24 text-center bg-surface2/30 border-2 border-dashed border-border rounded-3xl flex flex-col items-center">
+               <ShieldAlert size={40} className="text-text-3 opacity-30 mb-4" />
+               <h3 className="text-lg font-bold text-text mb-1">Zero Escalations Found</h3>
+               <p className="text-sm text-text-3 max-w-xs mx-auto font-medium">
+                 The monitor hasn't detected any signals requiring high-tier intervention.
+               </p>
+            </div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {items.map(item => (
+                <IncidentCard
+                  key={item.id}
+                  item={item}
+                  isNew={newIds.has(item.id)}
+                />
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
+
+        <footer className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-text-3 text-[10px] font-bold uppercase tracking-[0.2em]">
+           <div className="flex items-center gap-2">
+             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+             AI Risk Integrity Engine v2.4
+           </div>
+           <div>
+             © 2026 Maileo Systems • Secure Monitor Link
+           </div>
+        </footer>
+      </motion.div>
+    </div>
   );
 }

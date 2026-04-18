@@ -38,10 +38,9 @@ function SystemStatus() {
   const cls = online ? 'online' : 'offline';
 
   return (
-    <div className={`status-badge ${cls}`}>
+    // <div className={`status-badge ${cls}`}>
       <div className={`status-dot ${cls}`} />
-      {online ? 'Backend Connected' : 'Backend Offline'}
-    </div>
+    // </div>
   );
 }
 
