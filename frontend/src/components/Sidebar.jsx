@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, Inbox, BarChart3, Eye,
-  Settings, Sun, Moon, Zap, Edit3
+  Settings, Sun, Moon, Zap, Edit3, Activity
 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 
@@ -11,6 +11,7 @@ const NAV = [
   { id: 'inbox',      icon: Inbox,           label: 'Intelligence Feed' },
   { id: 'drafts',     icon: Edit3,           label: 'Draft Hub' },
   { id: 'analytics',  icon: BarChart3,        label: 'Analytics' },
+  { id: 'monitor',    icon: Activity,         label: 'Escalation Monitor' },
   { id: 'archive',    icon: Eye,             label: 'Vision Archive' },
 ];
 

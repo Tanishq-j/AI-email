@@ -13,6 +13,7 @@ import VisionArchive    from './components/VisionArchive_Enhanced';
 import Analytics        from './components/Analytics';
 import PersonalSpace    from './components/PersonalSpace';
 import Drafts           from './components/Drafts';
+import EscalationMonitor from './components/EscalationMonitor';
 
 /* ── Live status badge ─────────────────────────────────── */
 function SystemStatus() {
@@ -101,6 +102,7 @@ function Shell() {
               {tab === 'inbox'     && <IntelligenceFeed />}
               {tab === 'analytics' && <Analytics />}
               {tab === 'drafts'    && <Drafts />}
+              {tab === 'monitor'   && <EscalationMonitor />}
               {tab === 'archive'   && <VisionArchive />}
               {tab === 'settings'  && <PersonalSpace />}
             </div>
