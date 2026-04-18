@@ -4,14 +4,15 @@ import axios from 'axios';
 import { Search, Bell } from 'lucide-react';
 
 import { ThemeProvider } from './components/ThemeContext';
-import Sidebar       from './components/Sidebar';
-import CommandCenter from './components/CommandCenter';
+import Sidebar          from './components/Sidebar';
+import CommandCenter    from './components/CommandCenter';
 import IntelligenceFeed from './components/IntelligenceFeed';
 import AssistantWidget  from './components/AssistantWidget';
 import VisionArchive    from './components/VisionArchive_Enhanced';
 import Analytics        from './components/Analytics';
 import PersonalSpace    from './components/PersonalSpace';
 import Drafts           from './components/Drafts';
+import EscalationMonitor from './components/EscalationMonitor';
 
 /* ── Live status badge ─────────────────────────────────── */
 function SystemStatus() {
@@ -106,6 +107,7 @@ function Shell() {
               {tab === 'inbox'     && <IntelligenceFeed />}
               {tab === 'analytics' && <Analytics />}
               {tab === 'drafts'    && <Drafts />}
+              {tab === 'monitor'   && <EscalationMonitor />}
               {tab === 'archive'   && <VisionArchive />}
               {tab === 'settings'  && <PersonalSpace />}
             </div>

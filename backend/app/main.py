@@ -12,6 +12,7 @@ from app.graph import graph_app
 from app.agent_state import GraphState
 from app.dispatcher import dispatch_command
 from app.vision_parser import parse_vision_analysis, format_vision_card
+from app.routers.monitor import router as monitor_router
 from dotenv import load_dotenv
 
 load_dotenv() # Load variables from .env
@@ -39,6 +40,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Isolated read-only monitor router (zero disturbance to agent logic) ---
+app.include_router(monitor_router)
 
 redis_client = None
 try:
